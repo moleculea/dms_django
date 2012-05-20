@@ -1,10 +1,12 @@
 {% extends "base.html" %}
+{% block title %}Login - DMS{% endblock %}
+
 {% load url from future %}
 
 {% block content %}
 
 {% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
+{{ form.non_field_errors }}
 {% endif %}
 
 <form method="post" action="{% url 'django.contrib.auth.views.login' %}">
@@ -12,11 +14,23 @@
 <table>
 <tr>
     <td>{{ form.username.label_tag }}</td>
-    <td>{{ form.username }}</td>
+    <td>{{ form.username }}
+{% if form.username.errors %}
+    {% for error in form.username.errors %}
+        {{ error|escape }}
+    {% endfor %}
+{% endif %}
+    </td>
 </tr>
 <tr>
     <td>{{ form.password.label_tag }}</td>
-    <td>{{ form.password }}</td>
+    <td>{{ form.password }}
+{% if form.password.errors %}
+    {% for error in form.password.errors %}
+        {{ error|escape }}
+    {% endfor %}
+{% endif %}
+    </td>
 </tr>
 </table>
 

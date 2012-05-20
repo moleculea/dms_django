@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}User configuration - DMS{% endblock %}
+
+{% block content %}
+
+<table>
+<tr>
+	<td>
+	Scheduling
+	</td>
+	<td>
+	{{ msa }} <a href="/meeting/msa/config">[Config]</a>
+	</td>
+</tr>
+
+<tr>
+	<td>
+	Participation
+	</td>
+	<td>
+	{{ ca }} <a href="/meeting/ca/config">[Config]</a>
+	</td>
+</tr>
+
+<tr>
+	<td>
+	Agenda
+	</td>
+	<td>
+	{{ agenda.pref }}<br/>
+	{{ agenda.best }}
+	</td>
+</tr>
+
+</table>
+
+{% endblock %}
