@@ -110,7 +110,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    "/home/anshichao/dms/django"
+    "/home/anshichao/dms/website/templates"
 )
 
 INSTALLED_APPS = (
@@ -126,6 +126,7 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'user',
     'agenda',
+    'meeting',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -158,3 +159,6 @@ LOGGING = {
 }
 
 AUTH_PROFILE_MODULE = 'auth.UserSPADE'
+
+LOGIN_URL = '/user/login/'
+LOGIN_REDIRECT_URL = '/user/'

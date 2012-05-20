@@ -46,12 +46,6 @@ class Event(models.Model):
     class Meta:
         db_table = u'event'
 
-class Group(models.Model):
-    group_id = models.IntegerField(primary_key=True)
-    group_name = models.CharField(max_length=765)
-    class Meta:
-        db_table = u'group'
-
 class Meeting(models.Model):
     meeting_id = models.IntegerField(primary_key=True)
     host = models.ForeignKey(User)
@@ -118,15 +112,7 @@ class Msa(models.Model):
     active = models.CharField(max_length=15)
     class Meta:
         db_table = u'msa'
-"""
-class User(models.Model):
-    user_id = models.IntegerField(primary_key=True)
-    user_name = models.CharField(max_length=384)
-    email = models.CharField(max_length=384)
-    group = models.ForeignKey(Group)
-    class Meta:
-        db_table = u'user'
-"""
+
 class UserAgenda(models.Model):
     id = models.IntegerField(primary_key=True)
     user = models.ForeignKey(User)
@@ -154,12 +140,6 @@ class UserConfig(models.Model):
     class Meta:
         db_table = u'user_config'
 
-class UserEvent(models.Model):
-    event_id = models.IntegerField(primary_key=True)
-    date = models.DateField()
-    user = models.ForeignKey(User)
-    class Meta:
-        db_table = u'user_event'
 
 class UserInvitee(models.Model):
     id = models.IntegerField(primary_key=True)
