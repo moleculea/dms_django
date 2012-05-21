@@ -1,17 +1,22 @@
-{% extends "base.html" %}
+{% extends "login.html" %}
+
 {% block title %}Login - DMS{% endblock %}
 
 {% load url from future %}
 
 {% block content %}
-
+<div id="login">
+<div id="login_form">
 {% if form.errors %}
 {{ form.non_field_errors }}
 {% endif %}
 
 <form method="post" action="{% url 'user.views.login' %}">
 {% csrf_token %}
-<table>
+<table class="login_table">
+<th colspan="2">
+DMS Login
+</th>
 <tr>
     <td>{{ form.username.label_tag }}</td>
     <td>{{ form.username }}
@@ -32,10 +37,16 @@
 {% endif %}
     </td>
 </tr>
-</table>
-
+<tr>
+<td colspan="2">
 <input type="submit" value="login" />
 <input type="hidden" name="next" value="{{ next }}" />
-</form>
+</td>
+</tr>
+</table>
 
+
+</form>
+</div>
+</div>
 {% endblock %}

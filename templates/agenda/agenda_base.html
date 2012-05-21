@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block sidebar %}
+<ul class="sidenav">
+	<li><a href="/agenda/{% now "Y/" %}">Year</a></li>
+	<li><a href="/agenda/{% now "Y/m/" %}"">Month</a></li>
+</ul>
+{% endblock %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+{% endblock %}
+
+{% block logout %}
+{{ block.super }}
+{% endblock %}

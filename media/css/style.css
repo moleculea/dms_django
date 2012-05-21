@@ -5,6 +5,7 @@ body {
 	margin: 0;
 	padding: 0;
 	color: #000;
+	background:#F1F1F1;
 }
 
 /* 
@@ -14,7 +15,7 @@ body {
 	#content
 */
 #container {
-	width:1000px;
+	width:960px;
 	margin: 0 auto;
 
 }
@@ -26,68 +27,311 @@ body {
 	#logout
 */
 #headline {
-	background:#6495ED;
+	background:#B0C4DE;
 	padding:0;
+	margin:0;
 }
 
 #sidebar {
 	float:left;
-	width:120px;
-	height:200px;
-	background:#F1F1F1;
+	width:158px;
+	height:300px;
+	border-left:1px solid #aaa;
+	border-right:1px solid #aaa;
+	background:#E6E6FA;
 }
 
+#footer {
+	font-size:85%;
+	clear:both;
+	margin:5px auto;
+	padding:10px;
+	text-align:center;
+	background-color:#C0C0C0;
+}
+/*
+#content
+	#main
+*/
 #content {
 	float:right; 
-	width:880px; 
+	width:800px; 
+	min-height:300px;
 	background:#F9F9F9;
 }
 
 #logo {
-	display:inline-block;
-	border:1px solid black;
-	width:120px;
+	display:table-cell;
+	width:160px;
+	height:60px;
 	text-align:center;
-	padding:10px 0;
+	vertical-align:middle;
 }
 
 #navigation {
-	display:inline-block;
-	border:1px solid black;
-	width:740px;
+	display:table-cell;
+	width:680px;
 	text-align:center;
-	padding:10px 0;
+	vertical-align:middle;
 }
 
 #logout {
-	display:inline-block;
-	border:1px solid black;
-	width:100px;
+	
+	display:table-cell;
+	width:120px;
 	text-align:center;
-	padding:10px 0;
+	vertical-align:middle;
+	padding:0;
+	/* background-color:#E6E6FA; */
 }
-/*
-a:link {
-	color: #42413C;
 
-}
-a:visited {
-	color: #6E6C64;
 
+a img { 
+	border: none;
 }
-a:hover, a:active, a:focus { 
+
+a {
+	background: none; 
+	color: #002bb8; 
 	text-decoration: none;
-
 }
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:active {
+	color:: #faa700;
+}
+
+a:hover {
+	text-decoration: underline
+}
+
+
+
+/*
+Navigation buttons
 */
 a.navlink{
+	color:#696969;
+	font-size:110%;
 	text-decoration:None;
-	padding:8px 14px;
+	padding:6px 12px;
+	margin:0 4px;
 
 }
 a.navlink:hover {
 
-	background-color:#4169E1;
+	color: #FFF;
+}
+/*
+Logout buttons
+*/
+a.logoutlink{
+	color:#696969;
+	text-decoration:None;
+	padding:2px 4px;
+	margin:0 2px;
+
+}
+a.logoutlink:hover {
+	color: #FFF;
+}
+
+
+#main{
+	padding:0 15px;
+}
+
+h2 {
+	color: #696969;
+	padding-bottom:0px;
+	margin:10px 0;
+}
+
+h3 {
+	color: #696969;
+	padding-bottom:0px;
+	margin:10px 0;
+}
+
+
+
+/*
+Sidebar buttons
+*/
+ul.sidenav {
+	
+	list-style: none;  
+	padding:0;
+	margin:0px 0;
+	background:#E6E6FA;
+}
+
+
+ul.sidenav li {
+	border-bottom: 1px solid #aaa; 
+
+}
+ul.sidenav a, ul.sidenav a:visited {
+	color:#696969;
+	padding: 5px;
+	display: block; 
+	text-decoration: none;
+	
+}
+ul.sidenav a:hover, ul.sidenav a:active, ul.sidenav a:focus {
+	color: #FFF;
+	background-color:#6495ED;
+}
+
+
+#login{
+	text-align:center;
+	
+	
+}
+
+#login_form{
+	
+	width:250px;
+	margin:150px auto;
+	
+}
+
+table.login_table {
+	background:#F1F1F1;
+	border:1px solid silver;
+	padding:2px;
+}
+
+table.login_table th{
+	background-color:#B0C4DE;
+	padding:5px;
+	color:#696969;
+}
+table.login_table td{
+
+	padding:4px 2px;
 
 }
 
+table.dmstable {
+	border-collapse:collapse; 
+}
+
+table.dmstable th {
+	border:1px solid #aaa;
+	padding:2px 4px;
+	background-color:#F1F1F1;
+}
+table.dmstable td {
+	border:1px solid #aaa;
+	padding:2px 4px;
+	
+}
+
+/* Agenda table */
+table.agendatable {
+	border-collapse:collapse; 
+	display:block;
+
+}
+
+table.agendatable td {
+	border:1px solid #aaa;
+	padding:0px;
+	text-align:center;
+}
+
+table.agendatable th {
+	border:1px solid #aaa;
+	padding:4px 2px;
+	text-align:center;
+	background-color: #E6E6FA;
+}
+
+table.agendatable td:hover {
+	color: #FFF;
+}
+table.agendatable a {
+	color: #696969;
+}
+
+.agenda_day{
+	text-align:center;
+	display:inline-block;
+	padding:4px 0;
+	width:50px;
+	background-color: #F1F1F1;
+}
+
+.agenda_day:hover {
+	background-color: #6495ED;
+	color: #FFF;
+}
+
+.agenda_today{
+	text-align:center;
+	display:inline-block;
+	padding:4px 0;
+	width:50px;
+	background-color: #C0C0C0;
+	font-weight:bold;
+}
+
+.agenda_today:hover {
+	background-color: #6495ED;
+	color: #FFF;
+}
+
+.agenda_notempty{
+	text-align:center;
+	display:inline-block;
+	padding:4px 0;
+	width:50px;
+	background-color: #B0C4DE;
+	font-weight:bold;
+}
+
+.agenda_notempty:hover {
+	background-color: #6495ED;
+	color: #FFF;
+}
+
+.agenda_weekend{
+	text-align:center;
+	display:inline-block;
+	padding:4px 0;
+	width:50px;
+	background-color: #F0E68C;
+}
+
+.agenda_weekend:hover {
+	background-color: #6495ED;
+	color: #FFF;
+}
+
+.agenda_month{
+	margin:5px 0 0 0;
+	text-align:center;
+	float:left;
+}
+
+.prev_month{
+	color: #696969;
+	float:left;
+}
+
+.next_month{
+	color: #696969;
+	float:right;
+}
+
+a.year_top {
+	color: #696969;
+	font-size:130%;
+	font-weight:bold;
+	
+}

@@ -20,6 +20,7 @@ class UserAgenda(models.Model):
     
     class Meta:
         db_table = u'user_agenda'
+    
 
 """
 Event
@@ -48,4 +49,17 @@ class Event(models.Model):
     
     class Meta:
         db_table = u'event'
-        
+
+
+"""
+isDateEmpty()
+Determine whether a user's agenda on a certain date is empty by querying dms.user_agenda
+
+"""
+
+def isDateEmpty(user_id,date):
+    agenda = UserAgenda.objects.filter(user_id=user_id, date=date)
+    if len(agenda) > 0:
+        return False
+    else:
+        return True 

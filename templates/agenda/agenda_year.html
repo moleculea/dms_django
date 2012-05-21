@@ -1,0 +1,33 @@
+{% extends "agenda/agenda_base.html" %}
+{% load url from future %}
+{% block title %}Agenda year - DMS{% endblock %}
+
+{% block content %}
+{% block subject %}
+	<h3>{{year}}</h3>
+{% endblock %}
+<div class="agenda_month">
+<a href="/agenda/{{year|add:"-1"}}/" class="prev_month">Prev</a>
+<a href="/agenda/{{year|add:"1"}}/" class="next_month">Next</a>
+<table class="agendatable">
+<tr>
+{% for month in months %}
+{% if month.month == today.month and month.year == today.year %}
+<td>
+<a href="/agenda/{{month|date:"Y/m/"}}"><span class="agenda_today">{{month|date:"M"}}</span></a>
+</td>
+{% else %}
+<td>
+<a href="/agenda/{{month|date:"Y/m/"}}"><span class="agenda_day">{{month|date:"M"}}</span></a>
+</td>
+{% endif %}
+{% endfor%}
+</tr>
+</table>
+</div>
+{% endblock %}
+
+{% block logout %}
+{% include "in_logout.html" %}
+{{ block.super }}
+{% endblock %}

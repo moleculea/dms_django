@@ -1,13 +1,11 @@
-{% extends "user_base.html" %}
+{% extends "user/user_base.html" %}
 {% block title %}User - DMS{% endblock %}
-{% block content %}
-{% if query %}
 
-<p>
-<h3>{{username}}</h3>
-</p>
-{% endif %}
-<table>
+{% block content %}
+{% block subject %}
+<h2>{{username}}</h2>
+{% endblock %}
+<table class="dmstable">
 <caption><b>User profile</b></caption>
 <tr>
     <td>Username</td>
@@ -23,7 +21,7 @@
 </tr>
 </table>
 <br/>
-<table>
+<table class="dmstable">
 <caption><b>Statistics</b></caption>
 <tr>
     <td>Meetings scheduled</td>
@@ -33,5 +31,10 @@
     <td>Meetings invited to</td>
     <td>{{invite}}</td>
 </tr>
-</table
+</table>
+{% endblock %}
+
+{% block logout %}
+{% include "in_logout.html" %}
+{{ block.super }}
 {% endblock %}

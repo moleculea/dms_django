@@ -1,3 +1,16 @@
+"""
+URLconf
+user/
+
+    * login
+    * logout
+    * /
+    * password
+    * config
+    * list
+    * message
+    
+"""
 from django.conf.urls import patterns, include, url
 
 urlpatterns = patterns('',

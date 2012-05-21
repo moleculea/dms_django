@@ -39,7 +39,7 @@ def login(request):
     
     # Render login form
     else:
-        return auth_views.login(request, template_name="user_login.html")
+        return auth_views.login(request, template_name="user/user_login.html")
         
     
 """
@@ -77,7 +77,7 @@ def index(request, id=None):
     schedule = 0
     invite = 0
     context = {'username':username,'id':id,'joined':joined,'group':group,'query':query,'schedule':schedule,'invite':invite}
-    return render_to_response('user.html',context_instance=RequestContext(request))
+    return render_to_response('user/user.html',context,context_instance=RequestContext(request))
 
 
 """
@@ -90,6 +90,7 @@ password()
 @login_required
 def password(request):
     user = request.user
+    username = request.user.username
     if request.method == 'POST': # If the form has been submitted
         form = PasswordChangeForm(user, request.POST) # A form bound to the POST data
         if form.is_valid(): 
@@ -99,8 +100,8 @@ def password(request):
     else:
         form = PasswordChangeForm(user)
 
-    c = RequestContext(request, {'form': form})
-    t = get_template('user_password.html')
+    c = RequestContext(request, {'form': form,'username':username})
+    t = get_template('user/user_password.html')
     return HttpResponse(t.render(c))
 
 
@@ -119,8 +120,8 @@ def config(request):
     id = request.user.id
     data = UserConfig.objects.get(pk=id)
     agenda = {'pref':data.pref_period,'best':data.best_period}
-    c = RequestContext(request, {'msa': data.msa_id,'ca':data.ca_id,'agenda':agenda})
-    t = get_template('user_config.html')
+    c = RequestContext(request, {'msa': data.msa_id,'ca':data.ca_id,'agenda':agenda,'username':username})
+    t = get_template('user/user_config.html')
     return HttpResponse(t.render(c))
 
 
@@ -134,5 +135,6 @@ list()
 
 @login_required
 def list(request):
+    username = request.user.username
     data = User.objects.all()
-    return render_to_response('user_list.html',{'data':data}, context_instance=RequestContext(request))
+    return render_to_response('user/user_list.html',{'data':data,'username':username}, context_instance=RequestContext(request))

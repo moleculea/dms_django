@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<link rel="stylesheet" href="{{STATIC_URL}}css/style.css" />
+	<link rel="stylesheet" href="/static/css/style.css" />
     <title>{% block title %}DMS{% endblock %}</title>
 </head>
 
@@ -31,9 +31,16 @@
 	    </div>
 	    
 	    <div id="content">
+	    	<div id="main">
 	        {% block content %}{% endblock %}
+	        </div>
 	    </div>
-    
+	 	<div id="footer">
+	        {% block footer %}
+	        	{% include "t_footer.html" %}
+	        {% endblock %}
+		</div>   
     </div>
+
 </body>
 </html>

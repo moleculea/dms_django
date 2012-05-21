@@ -1,8 +1,12 @@
-{% extends "user_base.html" %}
+{% extends "user/user_base.html" %}
 {% block title %}User configuration - DMS{% endblock %}
 
 {% block content %}
-<table>
+{% block subject %}
+	<h3>User configuration</h3>
+{% endblock %}
+
+<table class="dmstable">
 <tr>
 	<td>
 	Scheduling
@@ -33,4 +37,9 @@
 
 </table>
 
+{% endblock %}
+
+{% block logout %}
+{% include "in_logout.html" %}
+{{ block.super }}
 {% endblock %}

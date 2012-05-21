@@ -1,7 +1,10 @@
-{% extends "user_base.html" %}
+{% extends "user/user_base.html" %}
 {% block title %}User list - DMS{% endblock %}
 {% block content %}
-<table>
+{% block subject %}
+	<h3>User list</h3>
+{% endblock %}
+<table class="dmstable">
 <tr>
 	<th>
 	Username
@@ -26,4 +29,8 @@ User
 
 {% endfor%}
 </table>
+{% endblock %}
+{% block logout %}
+{% include "in_logout.html" %}
+{{ block.super }}
 {% endblock %}
