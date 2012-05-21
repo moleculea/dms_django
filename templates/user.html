@@ -1,7 +1,37 @@
-{% extends "base.html" %}
+{% extends "user_base.html" %}
 {% block title %}User - DMS{% endblock %}
 {% block content %}
+{% if query %}
+
 <p>
-{{username}}, welcome to the Distributed Meeting Scheduler
+<h3>{{username}}</h3>
 </p>
+{% endif %}
+<table>
+<caption><b>User profile</b></caption>
+<tr>
+    <td>Username</td>
+    <td>{{username}}</td>
+</tr>
+<tr>
+    <td>Signup date</td>
+    <td>{{joined|date:"F j, Y" }}</td>
+</tr>
+<tr>
+    <td>User group</td>
+    <td>{{group}}</td>
+</tr>
+</table>
+<br/>
+<table>
+<caption><b>Statistics</b></caption>
+<tr>
+    <td>Meetings scheduled</td>
+    <td>{{schedule}}</td>
+</tr>
+<tr>
+    <td>Meetings invited to</td>
+    <td>{{invite}}</td>
+</tr>
+</table
 {% endblock %}

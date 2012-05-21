@@ -9,7 +9,7 @@
 {{ form.non_field_errors }}
 {% endif %}
 
-<form method="post" action="{% url 'django.contrib.auth.views.login' %}">
+<form method="post" action="{% url 'user.views.login' %}">
 {% csrf_token %}
 <table>
 <tr>

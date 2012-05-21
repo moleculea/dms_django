@@ -1,17 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="style.css" />
+	<link rel="stylesheet" href="{{STATIC_URL}}css/style.css" />
     <title>{% block title %}DMS{% endblock %}</title>
 </head>
 
 <body>
-    <div id="sidebar">
-
-    </div>
-
-    <div id="content">
-        {% block content %}{% endblock %}
+	<div id="container">
+	
+	    <div id="headline">
+	    	<div id="logo">
+			DMS
+			</div>
+	    	<div id="navigation">
+			{% block navigation %}
+				{% include "t_navigation.html" %}
+			{% endblock %}
+			</div>
+			<div id="logout">
+			{% block logout %}
+				{% include "t_logout.html" %}
+			{% endblock %}
+			</div>
+	    </div>
+	    
+	    <div id="sidebar">
+			{% block sidebar %}
+			Sidebar
+			{% endblock %}
+	    </div>
+	    
+	    <div id="content">
+	        {% block content %}{% endblock %}
+	    </div>
+    
     </div>
 </body>
 </html>

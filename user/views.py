@@ -1,20 +1,47 @@
 # -*- coding: utf-8 -*-
+# HTTP
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 
+# Template
 from django.template import RequestContext
 from django.template.loader import get_template
 
-
+# Models
 from user.models import UserSPADE, UserConfig
 from django.contrib.auth.models import User
+
 # login_required decorator
 from django.contrib.auth.decorators import login_required
-# Form
+
+# Forms
 from django import forms
-# Built-in forms
 from django.contrib.auth.forms import PasswordChangeForm
 
+# Others
+from django.core.urlresolvers import reverse
+
+import django.contrib.auth.views as auth_views
+
+"""
+login()
+
+# url: /user/login/
+# Login a user: if the user already login, redirect to /user/
+
+"""
+
+def login(request):
+    import django.contrib.auth.views as auth_views
+    # If the user already login
+    if request.user.is_authenticated():
+        return HttpResponseRedirect("/user/")
+    
+    # Render login form
+    else:
+        return auth_views.login(request, template_name="user_login.html")
+        
+    
 """
 index()
 
@@ -23,12 +50,34 @@ index()
 
 """
 @login_required
-def index(request):
-    username = request.user.username
-    #html = "Hello %s, welcome to the Distributed Meeting Scheduler"%username
-    #return HttpResponse(html)
-    return render_to_response('user.html',{'username':username})
+def index(request, id=None):
+    # id is captured from URL for external query page
+    query = True
+    if id:
+        # Query id
+        id = id
+        query = False
+    else:
+        # Id in cookie
+        id = request.user.id
 
+    # Query User model
+    data = User.objects.get(pk=id)
+    
+    username = data.username
+    joined = data.date_joined
+    group = data.is_superuser
+    
+    if group:
+        group = "Administrator"
+        
+    else:
+        group = "User"
+        
+    schedule = 0
+    invite = 0
+    context = {'username':username,'id':id,'joined':joined,'group':group,'query':query,'schedule':schedule,'invite':invite}
+    return render_to_response('user.html',context_instance=RequestContext(request))
 
 
 """
@@ -55,7 +104,6 @@ def password(request):
     return HttpResponse(t.render(c))
 
 
-
 """
 config()
 
@@ -75,3 +123,16 @@ def config(request):
     t = get_template('user_config.html')
     return HttpResponse(t.render(c))
 
+
+"""
+list()
+
+# url: /user/list/
+# Page for listing all users
+
+"""
+
+@login_required
+def list(request):
+    data = User.objects.all()
+    return render_to_response('user_list.html',{'data':data}, context_instance=RequestContext(request))

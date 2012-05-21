@@ -1,0 +1,29 @@
+{% extends "user_base.html" %}
+{% block title %}User list - DMS{% endblock %}
+{% block content %}
+<table>
+<tr>
+	<th>
+	Username
+	</th>
+	<th>
+	Group
+	</th>
+</tr>
+{% for user in data%}
+<tr>
+	<td>
+<a href="/user/id={{user.id}}/">{{user.username}}</a>
+	</td>
+	<td>
+{% if user.is_superuser%}
+Administrator
+{% else %}
+User
+{% endif %}
+	</td>
+</tr>
+
+{% endfor%}
+</table>
+{% endblock %}
