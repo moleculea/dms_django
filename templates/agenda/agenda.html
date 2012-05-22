@@ -6,8 +6,55 @@
 {% block subject %}
 	<h2>Agenda</h2>
 {% endblock %}
-{% endblock %}
+<table class="agendatable">
+<tr>
+<th>
+Date
+</th>
+<th>
+D
+</th>
+<th>
+P
+</th>
+<th>
+B
+</th>
+</tr>
+{% for row in agenda %}
+<tr>
+<td style="padding:2px 4px">
+	{{row.date|date:"Y/m/d"}}
+</td>
 
+<td>
+	{%if row.daily_period %}
+	<a href="/agenda/{{row.date|date:"Y/m/d/"}}"><span class="agenda_period_notempty">&nbsp;</span></a>
+	{% else %}
+	<a href="/agenda/{{row.date|date:"Y/m/d/"}}"><span class="agenda_period">&nbsp;</span></a>
+	{% endif %}
+</td>
+
+<td>
+	{%if row.pref_period != 65535 and row.pref_period != None %}
+	<a href="/agenda/{{row.date|date:"Y/m/d/"}}"><span class="agenda_pref_period">&nbsp;</span></a>
+	{% else %}
+	<a href="/agenda/{{row.date|date:"Y/m/d/"}}"><span class="agenda_period">&nbsp;</span></a>
+	{% endif %}
+</td>
+
+<td>
+	{%if row.best_period != 65535 and row.best_period != None %}
+	<a href="/agenda/{{row.date|date:"Y/m/d/"}}"><span class="agenda_best_period">&nbsp;</span></a>
+	{% else %}
+	<a href="/agenda/{{row.date|date:"Y/m/d/"}}"><span class="agenda_period">&nbsp;</span></a>
+	{% endif %}
+</td>
+
+</tr>
+{% endfor %}
+</table>
+{% endblock %}
 {% block logout %}
 {% include "in_logout.html" %}
 {{ block.super }}

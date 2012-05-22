@@ -60,6 +60,10 @@ class UserInvitee(models.Model):
 
 """
 
+def getUserConfig(user_id):
+    config = UserConfig.objects.get(user_id=user_id)
+    return config
+
 
 def displayUserConfig(user_id):
     pass

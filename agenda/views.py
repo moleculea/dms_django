@@ -7,8 +7,8 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 
 # Models
-from agenda.models import EventForm, isDateEmpty, getPeriod, changeDailyPeriod, changeTypePeriod, isEventEmpty, getEvent
-
+from agenda.models import UserAgenda, Event, EventForm, isDateEmpty, getPeriod, changeDailyPeriod, changeTypePeriod, isEventEmpty, getEvent, saveEvent
+from user.models import getUserConfig
 # login_required decorator
 from django.contrib.auth.decorators import login_required
 
@@ -19,10 +19,41 @@ index()
 """
 @login_required
 def index(request):
+    user_id = request.user.id
+    agenda = UserAgenda.objects.filter(user_id=user_id).order_by('date')
     
-    context = {}
+    context = {'agenda':agenda}
     return render_to_response('agenda/agenda.html',context)
 
+"""
+config()
+# url: /agenda/config/
+
+"""
+@login_required
+def config(request):
+    
+    user_id = request.user.id
+    pref_period = 65535
+    best_period = 65535
+    
+    user_config = getUserConfig(user_id)
+    
+    if user_config.pref_period:
+        pref_period = user_config.pref_period
+        
+    if user_config.best_period:
+        best_period = user_config.best_period
+        
+    pref_period = dailyPeriod2list(pref_period)
+    best_period = dailyPeriod2list(best_period)
+    
+    context = {'pref_period':pref_period,'best_period':best_period}    
+    
+    return render_to_response('agenda/agenda_config.html',context)
+    
+    
+    
 """
 year_view()
 
@@ -79,8 +110,12 @@ def month_view(request,year,month):
                     
                 # Not empty date
                 elif not isDateEmpty(user_id,datetime.date(year,month,day)):
-                    htmltb += "<td><a href='/agenda/%s/%s/%s/'><span class='agenda_notempty'>%s</span></a></td>"%(year,str(month).zfill(2),str(day).zfill(2),day)
-                    
+                    agenda = getPeriod(user_id,datetime.date(year,month,day))
+                    if agenda.daily_period:          
+                        htmltb += "<td><a href='/agenda/%s/%s/%s/'><span class='agenda_notempty'>%s</span></a></td>"%(year,str(month).zfill(2),str(day).zfill(2),day)
+                    else:
+                        htmltb += "<td><a href='/agenda/%s/%s/%s/'><span class='agenda_day'>%s</span></a></td>"%(year,str(month).zfill(2),str(day).zfill(2),day)
+                
                 # Weekend date    
                 elif weekday == 5 or weekday ==6:
                     htmltb += "<td><a href='/agenda/%s/%s/%s/'><span class='agenda_weekend'>%s</span></a></td>"%(year,str(month).zfill(2),str(day).zfill(2),day)
@@ -183,14 +218,34 @@ def day_view(request,year,month,day,type=None,action=None,period=None):
 
 
 """
-agenda_event
+event_view
 
 """
 @login_required
 def event_view(request,year,month,day):
     if request.method == 'POST':
-        pass
-    
+        form = EventForm(request.POST)
+        if form.is_valid():
+            
+            # user_id
+            user_id = request.user.id
+            
+            year = int(year)
+            month = int(month)
+            day = int(day)
+            
+            import datetime
+            # date
+            date = datetime.date(year,month,day)
+            
+            event = form.cleaned_data['event']
+            get = request.GET['edit']
+            # subperiod
+            subperiod = int(get)
+            
+            saveEvent(user_id, date, event, subperiod)
+       
+        return HttpResponseRedirect("/agenda/%s/%s/%s/event/"%(year,str(month).zfill(2),str(day).zfill(2)))
     
     else:
         get = None
@@ -223,9 +278,18 @@ def event_view(request,year,month,day):
         if request.GET:
             get = request.GET['edit']
             get = int(get)
-            form = EventForm()
             
-        #time = [str(i).zfill(2) for i in range(6,23)]
+            data= {}
+            if isEventEmpty(user_id,date):
+                pass
+            else:
+                event = getEvent(user_id,date)
+                cmd = "data['event'] = event.p%s"%(get+1)
+                exec(cmd)
+            
+            form = EventForm(data)
+            
+
         context = {'date':date,'daily_period_status':daily_period_status,'prev':prev,'next':next,'get':get,'form':form}
         return render_to_response('agenda/agenda_event.html',context, context_instance=RequestContext(request))
 

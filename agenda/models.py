@@ -56,8 +56,6 @@ class Event(models.Model):
         db_table = u'event'
 
 
-
-
 """
 EventForm
 
@@ -65,7 +63,7 @@ Used to submit event for a SINGLE one-hour sub-period
 """
 class EventForm(forms.Form):
     
-    event = forms.CharField(max_length=765, widget=forms.TextInput(attrs={'size':'40','maxlength':'765'} ))
+    event = forms.CharField(required=False, max_length=765, widget=forms.TextInput(attrs={'size':'40','maxlength':'765'} ))
     
     
 
@@ -114,7 +112,6 @@ Before calling this function must use isDateEmpty to validate that the date exis
 def getPeriod(user_id,date):
     agenda = UserAgenda.objects.get(user_id=user_id, date=date)
     return agenda
-
 
 
 """
@@ -169,6 +166,73 @@ def saveTypePeriod(id, user_id, date, pref_period, best_period):
         agenda = UserAgenda(pk=id, user_id=user_spade, date=date, pref_period = pref_period, best_period = best_period)
         agenda.save()
 
+
+"""
+saveEvent()
+Save event
+"""
+
+def saveEvent(user_id, date, event, subperiod):
+    
+    # Insert new event
+    if isEventEmpty(user_id, date):
+        
+        # Insert date and event
+        if isDateEmpty(user_id,date):
+            # Insert event to dms.event
+            event = instantiateEvent(subperiod,event)
+            event.save()
+            
+            # Insert date to dms.user_agenda, with foreign key to event
+            user = User(id=user_id)
+            user_spade = UserSPADE(user_id=user)
+            agenda = UserAgenda(user_id=user_spade,date=date,event_id=event)
+            agenda.save()
+            
+        # Update date and insert event
+        else:
+            # Insert event to dms.event
+            event = instantiateEvent(subperiod,event)
+            event.save()
+            
+            # Get primary key for agenda instance
+            agenda = getPeriod(user_id, date)
+            id = agenda.id
+            
+            # Update date to dms.user_agenda, with foreign key to event
+            user = User(id=user_id)
+            user_spade = UserSPADE(user_id=user)
+            agenda = UserAgenda(pk=id,user_id=user_spade,date=date,event_id=event)
+            agenda.save()
+
+    # Update event
+    else:
+        agenda = getPeriod(user_id, date)
+        # Get the event instance
+        e = agenda.event_id
+        e = instantiateEvent(subperiod,event,e)
+        e.save()
+        
+    
+"""
+instantiateEvent()
+Instantiate Event class with subperiod and event
+"""
+def instantiateEvent(subperiod,event,inst=None):
+
+    if inst:
+        cmd = "inst.p%s = event"%(subperiod+1)
+        exec(cmd)
+        return inst
+        
+    else:
+        sublist = [u'' for i in range(0,16)]
+        sublist[subperiod] = event
+        instance = Event(p1=sublist[0],p2=sublist[1],p3=sublist[2],p4=sublist[3],p5=sublist[4],p6=sublist[5],p7=sublist[6],p8=sublist[7],p9=sublist[8],p10=sublist[9],p11=sublist[10],p12=sublist[11],p13=sublist[12],p14=sublist[13],p15=sublist[14],p16=sublist[15])
+        return instance
+    
+
+
 """
 changeDailyPeriod()
 Change an one-hour sub-period of a date into "idle" or "occupied"
@@ -188,6 +252,7 @@ def changeDailyPeriod(user_id, date, action, subperiod):
             agenda = getPeriod(user_id, date)
             id = agenda.id
             daily_period = agenda.daily_period
+            daily_period = none2Zero(daily_period)
             daily_period = daily_period | RDIGIT[subperiod]
 
     
@@ -195,6 +260,7 @@ def changeDailyPeriod(user_id, date, action, subperiod):
         agenda = getPeriod(user_id, date)
         id = agenda.id
         daily_period = agenda.daily_period
+        daily_period = none2Zero(daily_period)
         daily_period = daily_period & DIGIT[subperiod]
 
     # Update or insert    
@@ -290,6 +356,16 @@ def changeTypePeriod(user_id, date, action, subperiod, type):
      
     # Update or insert pref_period/best_period           
     saveTypePeriod(id, user_id, date, pref_period, best_period)                
+ 
+"""
+none2Zero()
+If the period is None, convert it into 0
+"""
+def none2Zero(period):
+    if period == None:
+        period = 0
+    return period
+ 
                    
 """
 none2Reverse()

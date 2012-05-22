@@ -6,7 +6,50 @@
 {% block subject %}
 	<h3>Agenda configuration</h3>
 {% endblock %}
+<div class="agenda_month">
 
+
+<table class="agendatable">
+<caption style="margin:4px 0">
+<b>Configure default Preferred Period / Best Period<b>
+</caption>
+<tr>
+
+{% for status in pref_period %}
+	{% if not status %}
+	<td>
+	<a href="/agenda/config/pref/idle={{forloop.counter0}}"><span class="agenda_pref_period">&nbsp;</span></a>
+	</td>
+	{% else %}
+	<td>
+	<a href="/agenda/config/pref/occupy={{forloop.counter0}}"><span class="agenda_period">&nbsp;</span></a>
+	</td>	
+	{% endif %}
+{% endfor %}
+<td><span class="period_type">P</span></td>
+</tr>
+</table>
+
+<table class="agendatable">
+<tr>
+
+{% for status in best_period %}
+	{% if not status %}
+	<td>
+	<a href="/agenda/config/best/idle={{forloop.counter0}}"><span class="agenda_best_period">&nbsp;</span></a>
+	</td>
+	{% else %}
+	<td>
+	<a href="/agenda/config/best/occupy={{forloop.counter0}}"><span class="agenda_period">&nbsp;</span></a>
+	</td>	
+	{% endif %}
+{% endfor %}
+<td><span class="period_type">B</span></td>
+</tr>
+</table>
+
+
+</div>
 {% endblock %}
 
 {% block logout %}
