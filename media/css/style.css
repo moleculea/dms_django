@@ -236,10 +236,12 @@ table.dmstable td {
 table.agendatable {
 	border-collapse:collapse; 
 	display:block;
+	margin:0 0 4px 6px;
 
 }
 
 table.agendatable td {
+	color:#696969;
 	border:1px solid #aaa;
 	padding:0px;
 	text-align:center;
@@ -252,9 +254,7 @@ table.agendatable th {
 	background-color: #E6E6FA;
 }
 
-table.agendatable td:hover {
-	color: #FFF;
-}
+
 table.agendatable a {
 	color: #696969;
 }
@@ -322,16 +322,96 @@ table.agendatable a {
 .prev_month{
 	color: #696969;
 	float:left;
+	margin:0 6px;
 }
 
 .next_month{
 	color: #696969;
 	float:right;
+	margin:0 6px;
+
 }
 
 a.year_top {
 	color: #696969;
 	font-size:130%;
 	font-weight:bold;
+}
+
+
+.agenda_period{
+	text-align:center;
+	display:inline-block;
+	padding:4px 0;
+	width:30px;
+	background-color: #F1F1F1;
+}
+
+.agenda_period:hover {
+	background-color: #6495ED;
+	color: #FFF;
+}
+
+
+.agenda_period_notempty{
+	text-align:center;
+	display:inline-block;
+	padding:4px 0;
+	width:30px;
+	background-color: #B0C4DE;
+}
+
+.agenda_period_notempty:hover {
+	background-color: #6495ED;
+	color: #FFF;
+}
+
+.agenda_time{
+	font-size:92%;
+	color:#696969;
+	display:inline-block;
+	width:30px;
+	padding:0px 0;
+
+}
+
+table.agenda_timetable{
+	border-collapse:collapse; 
+	display:block;
+}
+
+table.agenda_timetable td {
+	padding:0 0 0 1px;
+	text-align:left;
+}
+
+.agenda_pref_period{
+	text-align:center;
+	display:inline-block;
+	padding:4px 0;
+	width:30px;
+	background-color: #9ACD32;
+}
+
+.agenda_pref_period:hover {
+	background-color: #6495ED;
+	color: #FFF;
+}
+
+.agenda_best_period{
+	text-align:center;
+	display:inline-block;
+	padding:4px 0;
+	width:30px;
+	background-color: #FFA07A;
+}
+
+.agenda_best_period:hover {
+	background-color: #6495ED;
+	color: #FFF;
+}
+
+.period_type{
+	padding:5px;
 	
 }

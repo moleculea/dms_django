@@ -2,6 +2,10 @@ from django.db import models
 from django.contrib.auth.models import User
 from user.models import UserSPADE
 
+import sys
+sys.path.append('/home/anshichao/dms/spade/Algorithms')
+from DIGIT import *
+
 """
 UserAgenda
 
@@ -54,7 +58,7 @@ class Event(models.Model):
 """
 isDateEmpty()
 Determine whether a user's agenda on a certain date is empty by querying dms.user_agenda
-
+date can be either a "yyyy-mm-dd" string or a datetime.date instance
 """
 
 def isDateEmpty(user_id,date):
@@ -62,4 +66,205 @@ def isDateEmpty(user_id,date):
     if len(agenda) > 0:
         return False
     else:
-        return True 
+        return True
+
+"""
+getPeriod()
+Get the period of a certain date for a user
+Before calling this function must use isDateEmpty to validate that the date exists for the user
+
+    return value: agenda
+        # daily_period: agenda.daily_period
+        # pref_period: agenda.pref_period
+        # best_period: agenda.best_period
+"""
+
+def getPeriod(user_id,date):
+    agenda = UserAgenda.objects.get(user_id=user_id, date=date)
+    return agenda
+
+"""
+saveDailyPeriod()
+Save a daily period to a specific date of a user
+"""
+
+def saveDailyPeriod(id, user_id, date, daily_period):
+    
+    # Update
+    if id:
+        agenda = UserAgenda.objects.get(pk=id)
+        agenda.daily_period = daily_period
+        agenda.save()
+        
+    # Insert
+    else:
+        user = User(id=user_id)
+        user_spade = UserSPADE(user_id=user)
+        agenda = UserAgenda(user_id=user_spade, date=date, daily_period=daily_period)
+        agenda.save()
+
+
+"""
+saveTypePeriod()
+Save a pref_period/best_period to a specific date of a user
+"""
+
+def saveTypePeriod(id, user_id, date, pref_period, best_period):
+    
+    # Update
+    if id:
+        agenda = UserAgenda.objects.get(pk=id)
+        agenda.pref_period = pref_period
+        agenda.best_period = best_period
+        agenda.save()
+
+    # Insert
+    else:
+        user = User(id=user_id)
+        user_spade = UserSPADE(user_id=user)
+        agenda = UserAgenda(pk=id, user_id=user_spade, date=date, pref_period = pref_period, best_period = best_period)
+        agenda.save()
+
+"""
+changeDailyPeriod()
+Change an one-hour sub-period of a date into "idle" or "occupied"
+
+subperiod is an index from 0 to 15 indicating 16 different hourly sub-periods
+
+"""
+
+def changeDailyPeriod(user_id, date, action, subperiod):
+    daily_period = 0
+    id = None;
+    if action == "occupy":
+        if isDateEmpty(user_id, date):
+            daily_period = daily_period | RDIGIT[subperiod]
+            
+        else:
+            agenda = getPeriod(user_id, date)
+            id = agenda.id
+            daily_period = agenda.daily_period
+            daily_period = daily_period | RDIGIT[subperiod]
+
+    
+    if action == "idle":
+        agenda = getPeriod(user_id, date)
+        id = agenda.id
+        daily_period = agenda.daily_period
+        daily_period = daily_period & DIGIT[subperiod]
+
+    # Update or insert    
+    saveDailyPeriod(id, user_id, date, daily_period)
+
+"""
+
+changeTypePeriod()
+
+Change pref_period or best_period according to type given as an argument
+Make sure pref_period and best_period don't conflict with each other
+
+Totally DIFFERENT from changeDailyPeriod : digit expressions of daily_period and pref_period/best_period are opposite
+"""
+
+def changeTypePeriod(user_id, date, action, subperiod, type):
+    
+    pref_period = REVERSE
+    best_period = REVERSE
+    id = None
+    
+    # To change 1 into 0 (expand period)
+    if action == "occupy":
+        if isDateEmpty(user_id, date):
+            if type == "pref":
+                pref_period = pref_period & DIGIT[subperiod]
+                
+            if type == "best":
+                best_period = best_period & DIGIT[subperiod]
+                
+        else:
+            agenda = getPeriod(user_id, date)
+            id = agenda.id
+            
+            pref_period = agenda.pref_period
+            best_period = agenda.best_period
+
+            pref_period = none2Reverse(pref_period)
+            best_period = none2Reverse(best_period)
+            
+            if type == "pref":
+                # Change 1 into 0
+                pref_period = pref_period & DIGIT[subperiod]
+                
+                # Meantime, revert the sub-period on best_period to avoid conflict
+                # Change 0 into 1
+
+                best_period = best_period | RDIGIT[subperiod]    
+                
+            if type == "best":
+                # Change 1 into 0
+                best_period = best_period & DIGIT[subperiod]
+                
+                # Meantime, revert the sub-period on pref_period to avoid conflict
+                # Change 0 into 1
+
+                pref_period = pref_period | RDIGIT[subperiod]
+
+    # To change 0 into 1 (cut period)
+    if action == "idle":
+        if isDateEmpty(user_id, date):
+            if type == "pref":
+                pref_period = pref_period | RDIGIT[subperiod]
+                
+            if type == "best":
+                best_period = best_period | RDIGIT[subperiod]
+                
+        else:
+            agenda = getPeriod(user_id, date)
+            id = agenda.id
+            
+            pref_period = agenda.pref_period
+            best_period = agenda.best_period
+
+            pref_period = none2Reverse(pref_period)
+            best_period = none2Reverse(best_period)
+            
+            if type == "pref":
+                # Change 0 into 1
+                pref_period = pref_period | RDIGIT[subperiod]
+                
+                # Meantime, revert the sub-period on best_period to avoid conflict
+                # Change 1 into 0
+                #best_period = best_period & DIGIT[subperiod]    
+                
+            if type == "best":
+                # Change 0 into 1
+                best_period = best_period | RDIGIT[subperiod]
+                
+                # Meantime, revert the sub-period on pref_period to avoid conflict
+                # Change 1 into 0
+                #pref_period = pref_period & DIGIT[subperiod]         
+     
+    # Update or insert pref_period/best_period           
+    saveTypePeriod(id, user_id, date, pref_period, best_period)                
+                   
+"""
+none2Reverse()
+If the period is None, convert it into REVERSE and return it
+Else, return the period unchanged
+"""
+def none2Reverse(period):
+    if period == None:
+        period = REVERSE
+    return period
+
+"""
+isZero()
+Determine whether an one-hour sub-period of the given period is zero
+"""
+def isZero(period,subperiod):
+    if period | DIGIT[subperiod] == DIGIT[subperiod]:
+        return True
+    else:
+        return False
+    
+    

@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 {% block sidebar %}
 <ul class="sidenav">
+	<li><a href="/agenda/config/">Config</a></li>
 	<li><a href="/agenda/{% now "Y/" %}">Year</a></li>
 	<li><a href="/agenda/{% now "Y/m/" %}"">Month</a></li>
+	<li><a href="/agenda/{% now "Y/m/d/" %}"">Day</a></li>
+	<li><a href="/agenda/event/{% now "Y/m/d/" %}"">Event</a></li>
 </ul>
 {% endblock %}
 

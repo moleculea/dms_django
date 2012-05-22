@@ -14,5 +14,11 @@ urlpatterns = patterns('agenda.views',
     # Month view
     url(r'^(?P<year>\d{4})/(?P<month>\d{2})/$','month_view'),
     # Day view
-    #url(r'^(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})/$','day_view'),
+    url(r'^(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})/$','day_view',name='show'),
+    
+    # Day view (update daily_period)
+    url(r'^(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})/(?P<action>[^/=]+)=(?P<period>\d{1,2})/$','day_view',name='update'),
+    
+    # Day view (update best_period and pref_period)
+    url(r'^(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})/(?P<type>[^/]+)/(?P<action>[^/=]+)=(?P<period>\d{1,2})/$','day_view', name='type'),
 )

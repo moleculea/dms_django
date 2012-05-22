@@ -1,0 +1,15 @@
+{% extends "agenda/agenda_base.html" %}
+{% load url from future %}
+{% block title %}Agenda configuration - DMS{% endblock %}
+
+{% block content %}
+{% block subject %}
+	<h3>Agenda configuration</h3>
+{% endblock %}
+
+{% endblock %}
+
+{% block logout %}
+{% include "in_logout.html" %}
+{{ block.super }}
+{% endblock %}

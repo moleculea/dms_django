@@ -1,0 +1,82 @@
+{% extends "agenda/agenda_base.html" %}
+{% load url from future %}
+{% block title %}Agenda day - DMS{% endblock %}
+
+{% block content %}
+{% block subject %}
+	<h3>{{date|date:"F j, Y"}}</h3>
+{% endblock %}
+<div class="agenda_month">
+<a href="/agenda/{{prev|date:"Y/m/d/"}}" class="prev_month">Prev</a>
+<a href="/agenda/{{date|date:"Y/m/"}}" class="year_top">{{date|date:"F"}}</a>
+<a href="/agenda/{{next|date:"Y/m/d/"}}" class="next_month">Next</a>
+
+<table class="agenda_timetable">
+<tr>
+{% for t in time %}
+	<td>
+	<span class="agenda_time">{{t}}</span>
+	</td>
+{% endfor %}
+</tr>
+</table>
+<table class="agendatable">
+
+<tr>
+{% for status in daily_period_status %}
+	{% if status %}
+	<td>
+	<a href="/agenda/{{date|date:"Y/m/d/"}}idle={{forloop.counter0}}"><span class="agenda_period_notempty">&nbsp;</span></a>
+	</td>
+	{% else %}
+	<td>
+	<a href="/agenda/{{date|date:"Y/m/d/"}}occupy={{forloop.counter0}}"><span class="agenda_period">&nbsp;</span></a>
+	</td>	
+	{% endif %}
+{% endfor %}
+<td><span class="period_type">O</span></td>
+</tr>
+</table>
+
+<table class="agendatable">
+<tr>
+
+{% for status in pref_period %}
+	{% if not status %}
+	<td>
+	<a href="/agenda/{{date|date:"Y/m/d/"}}pref/idle={{forloop.counter0}}"><span class="agenda_pref_period">&nbsp;</span></a>
+	</td>
+	{% else %}
+	<td>
+	<a href="/agenda/{{date|date:"Y/m/d/"}}pref/occupy={{forloop.counter0}}"><span class="agenda_period">&nbsp;</span></a>
+	</td>	
+	{% endif %}
+{% endfor %}
+<td><span class="period_type">P</span></td>
+</tr>
+</table>
+
+<table class="agendatable">
+<tr>
+
+{% for status in best_period %}
+	{% if not status %}
+	<td>
+	<a href="/agenda/{{date|date:"Y/m/d/"}}best/idle={{forloop.counter0}}"><span class="agenda_best_period">&nbsp;</span></a>
+	</td>
+	{% else %}
+	<td>
+	<a href="/agenda/{{date|date:"Y/m/d/"}}best/occupy={{forloop.counter0}}"><span class="agenda_period">&nbsp;</span></a>
+	</td>	
+	{% endif %}
+{% endfor %}
+<td><span class="period_type">B</span></td>
+</tr>
+</table>
+</div>
+{% endblock %}
+
+{% block logout %}
+{% include "in_logout.html" %}
+{{ block.super }}
+{% endblock %}
