@@ -46,7 +46,7 @@ UserInvitee
 """
 class UserInvitee(models.Model):
     
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     host_id = models.ForeignKey('UserSPADE', db_column="host_id", related_name='+')
     invitee_id = models.ForeignKey('UserSPADE', db_column="invitee_id", related_name='+')
     invitee_status = models.IntegerField(null=True)

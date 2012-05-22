@@ -323,13 +323,14 @@ table.agendatable a {
 	color: #696969;
 	float:left;
 	margin:0 6px;
+	display:block;
 }
 
 .next_month{
 	color: #696969;
 	float:right;
 	margin:0 6px;
-
+	display:block;
 }
 
 a.year_top {

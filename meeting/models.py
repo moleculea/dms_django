@@ -9,7 +9,7 @@ UserMSA
 """
 
 class UserMSA(models.Model):
-    msa_id = models.IntegerField(primary_key=True)
+    msa_id = models.AutoField(primary_key=True)
     user_id = models.ForeignKey('user.UserSPADE', db_column="user_id", related_name='+')
     active = models.CharField(max_length=15)
     
@@ -25,7 +25,7 @@ UserCA
 """
 
 class UserCA(models.Model):
-    ca_id = models.IntegerField(primary_key=True)
+    ca_id = models.AutoField(primary_key=True)
     user_id = models.ForeignKey('user.UserSPADE', db_column="user_id", related_name='+')
     active = models.CharField(max_length=15)
     accept = models.CharField(max_length=15)

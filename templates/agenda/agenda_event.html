@@ -1,0 +1,54 @@
+{% extends "agenda/agenda_base.html" %}
+{% load url from future %}
+{% block title %}Agenda event - DMS{% endblock %}
+
+{% block content %}
+{% block subject %}
+	<h3>{{date|date:"F j, Y"}}</h3>
+{% endblock %}
+<div class="agenda_month">
+
+{% if form.errors %}
+{{ form.name.errors }}
+{% endif %}
+<a href="/agenda/{{prev|date:"Y/m/d/"}}event" class="prev_month">Prev</a>
+<a href="/agenda/{{next|date:"Y/m/d/"}}event" class="next_month">Next</a>
+<br/>
+<table class="agendatable">
+{% for status in daily_period_status %}
+<tr>
+	<td style="padding:0 5px;font-size:92%">
+	{{forloop.counter|add:"5"|stringformat:"02d:00"}} - {{forloop.counter|add:"6"|stringformat:"02d:00"}}
+	</td>
+	<td>
+	{% if status.0 %}
+	<a href="/agenda/{{date|date:"Y/m/d/"}}idle={{forloop.counter0}}/?next=event/"><span class="agenda_period_notempty">&nbsp;</span></a>
+	{% else %}
+	<a href="/agenda/{{date|date:"Y/m/d/"}}occupy={{forloop.counter0}}/?next=event/"><span class="agenda_period">&nbsp;</span></a>
+	{% endif %}
+	</td>
+	<td>
+	{% if get == forloop.counter0 %}
+	<form method="post" action=""> {% csrf_token %}
+	{{form.event}}
+	<input type="submit" value="submit">
+	</form>
+	{% else %}
+		{% if status.1 %}
+	<a href="?edit={{forloop.counter0}}"><span class="agenda_period" style="width:100%;min-width:120px;padding:4px 0px;">{{status.1}}</span></a>
+		{% else %}
+	<a href="?edit={{forloop.counter0}}"><span class="agenda_period" style="width:100%;min-width:120px;padding:4px 0px;">No event</span></a>		
+		{% endif %}
+	{% endif %}
+	</td>
+
+</tr>
+{% endfor %}
+</table>
+</div>
+{% endblock %}
+
+{% block logout %}
+{% include "in_logout.html" %}
+{{ block.super }}
+{% endblock %}

@@ -7,7 +7,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 
 # Models
-from agenda.models import isDateEmpty, getPeriod, changeDailyPeriod, changeTypePeriod
+from agenda.models import EventForm, isDateEmpty, getPeriod, changeDailyPeriod, changeTypePeriod, isEventEmpty, getEvent
 
 # login_required decorator
 from django.contrib.auth.decorators import login_required
@@ -143,6 +143,7 @@ def day_view(request,year,month,day,type=None,action=None,period=None):
     else:
          # Update agenda daily period and redirect
         if type == None:
+            
             year = int(year)
             month = int(month)
             day = int(day)
@@ -155,8 +156,12 @@ def day_view(request,year,month,day,type=None,action=None,period=None):
             # Submit change
             changeDailyPeriod(user_id, date, action, period)
             
-            # Redirect 
-            return HttpResponseRedirect("/agenda/%s/%s/%s/"%(year,str(month).zfill(2),str(day).zfill(2)))
+            # Redirect (for event)
+            if request.GET:
+                get = request.GET['next']
+                return HttpResponseRedirect("/agenda/%s/%s/%s/%s"%(year,str(month).zfill(2),str(day).zfill(2),get))
+            else:
+                return HttpResponseRedirect("/agenda/%s/%s/%s/"%(year,str(month).zfill(2),str(day).zfill(2)))
         
         # Update pref_period and best_period, and then redirect
         else:
@@ -175,6 +180,56 @@ def day_view(request,year,month,day,type=None,action=None,period=None):
             
             # Redirect 
             return HttpResponseRedirect("/agenda/%s/%s/%s/"%(year,str(month).zfill(2),str(day).zfill(2)))
+
+
+"""
+agenda_event
+
+"""
+@login_required
+def event_view(request,year,month,day):
+    if request.method == 'POST':
+        pass
+    
+    
+    else:
+        get = None
+        form = None
+        year = int(year)
+        month = int(month)
+        day = int(day)
+        user_id = request.user.id
+        daily_period_status = [0 for i in range(0,16)]
+
+        import datetime
+        date = datetime.date(year,month,day)
+        
+        if isDateEmpty(user_id, date):
+            # Render an empty date for daily period
+            pass
+            
+        else:
+            agenda = getPeriod(user_id, date)
+            dp = agenda.daily_period
+            if dp:
+                daily_period_status = dailyPeriod2list(dp)
+            
+        prev = prevDay(date)
+        next = nextDay(date)
+        
+        # Get list of 2-tuples of daily period and event
+        daily_period_status = dailyPeriodEvent(daily_period_status, user_id, date)
+
+        if request.GET:
+            get = request.GET['edit']
+            get = int(get)
+            form = EventForm()
+            
+        #time = [str(i).zfill(2) for i in range(6,23)]
+        context = {'date':date,'daily_period_status':daily_period_status,'prev':prev,'next':next,'get':get,'form':form}
+        return render_to_response('agenda/agenda_event.html',context, context_instance=RequestContext(request))
+
+
 
 """
 ##################
@@ -236,3 +291,27 @@ def dailyPeriod2list(daily_period):
     string = string.zfill(16)
     list = [int(i) for i in string]
     return list
+
+"""
+dailyPeriodEvent()
+
+Convert a daily period list (converted from dailyPeriod2list()) into a list of 2-tuples, each with event
+"""
+
+def dailyPeriodEvent(daily_period_list, user_id, date):
+    daily_period_event = []
+    if isEventEmpty(user_id,date):
+        daily_period_event = [(daily_period_list[i],None) for i in range(0,16)]
+    else:
+        event = getEvent(user_id, date)
+        
+        # List of events for p1,p2,...p16
+        event_list = []
+        for i in range(1,17):
+            cmd = "event_list.append(event.p%s)"%i
+            exec(cmd)
+        
+        daily_period_event = [(daily_period_list[i],event_list[i]) for i in range(0,16)]
+    # [ (daily_period1, event1) ,...]
+    return daily_period_event
+        

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from user.models import UserSPADE
+from django import forms
 
 import sys
 sys.path.append('/home/anshichao/dms/spade/Algorithms')
@@ -14,13 +15,13 @@ UserAgenda
 
 class UserAgenda(models.Model):
     
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     user_id = models.ForeignKey(UserSPADE, db_column="user_id")
     date = models.DateField()
     daily_period = models.IntegerField()
     pref_period = models.IntegerField()
     best_period = models.IntegerField()
-    event_id = models.ForeignKey('Event', db_column="event_id", null= True)
+    event_id = models.ForeignKey('Event', db_column="event_id", null=True)
     
     class Meta:
         db_table = u'user_agenda'
@@ -33,7 +34,7 @@ Event
 """
 
 class Event(models.Model):
-    event_id = models.IntegerField(primary_key=True)
+    event_id = models.AutoField(primary_key=True)
     p1 = models.CharField(max_length=765)
     p2 = models.CharField(max_length=765)
     p3 = models.CharField(max_length=765)
@@ -55,6 +56,19 @@ class Event(models.Model):
         db_table = u'event'
 
 
+
+
+"""
+EventForm
+
+Used to submit event for a SINGLE one-hour sub-period
+"""
+class EventForm(forms.Form):
+    
+    event = forms.CharField(max_length=765, widget=forms.TextInput(attrs={'size':'40','maxlength':'765'} ))
+    
+    
+
 """
 isDateEmpty()
 Determine whether a user's agenda on a certain date is empty by querying dms.user_agenda
@@ -67,6 +81,24 @@ def isDateEmpty(user_id,date):
         return False
     else:
         return True
+
+
+"""
+isEventEmpty()
+
+
+"""
+def isEventEmpty(user_id,date):
+    agenda = UserAgenda.objects.filter(user_id=user_id, date=date)
+    if len(agenda) > 0:
+        agenda = UserAgenda.objects.get(user_id=user_id, date=date)
+        if agenda.event_id:
+            return False
+        else:
+            return True
+    else:
+        return True
+
 
 """
 getPeriod()
@@ -82,6 +114,18 @@ Before calling this function must use isDateEmpty to validate that the date exis
 def getPeriod(user_id,date):
     agenda = UserAgenda.objects.get(user_id=user_id, date=date)
     return agenda
+
+
+
+"""
+getEvent()
+Before calling this function must use isEventEmpty to validate that the date exists for the user
+
+"""
+def getEvent(user_id,date):
+    agenda = UserAgenda.objects.get(user_id=user_id, date=date)
+    event = agenda.event_id
+    return event
 
 """
 saveDailyPeriod()
