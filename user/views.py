@@ -25,6 +25,9 @@ from django.core.urlresolvers import reverse
 
 import django.contrib.auth.views as auth_views
 
+# Pagination
+from django.core.paginator import Paginator
+
 """
 login()
 
@@ -156,4 +159,25 @@ list()
 def list(request):
     username = request.user.username
     data = User.objects.all()
+    paginator = Paginator(data, 10)
+    
+    if request.GET:
+        page = request.GET.get('page')
+    else:
+        page = 1
+    
+    try:
+        data = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        data = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        data = paginator.page(paginator.num_pages)
+    
+
     return render_to_response('user/user_list.html',{'data':data,'username':username}, context_instance=RequestContext(request))
+
+
+
+

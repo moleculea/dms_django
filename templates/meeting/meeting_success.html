@@ -1,10 +1,10 @@
 {% extends "meeting/meeting_base.html" %}
 {% load url from future %}
-{% block title %}Meetings - DMS{% endblock %}
+{% block title %}Meetings successful - DMS{% endblock %}
 
 {% block content %}
 {% block subject %}
-	<h2>Meetings</h2>
+    <h3>Meetings successful</h3>
 {% endblock %}
 
 {%with meeting_list as data %}
@@ -13,7 +13,7 @@
 
 <table class="dmstable">
 <caption>
-<b>Successful meetings to be held</b>
+<b>All successful meetings</b>
 </caption>
     <tr>
     <th>Host</th>
@@ -35,4 +35,5 @@
     {%endfor%}
 
 </table>
+
 {% endblock %}

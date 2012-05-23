@@ -75,7 +75,7 @@ class Meeting(models.Model):
     conf_method = models.CharField(max_length=60)
     
     # Functional columns
-    conf_period = models.IntegerField(null=True) # True | False | NULL | Period
+    conf_period = models.CharField(max_length=60) # True | False | NULL | Period
     choose_period = models.CharField(max_length=1500)
     invite = models.CharField(max_length=60) # True | False | NULL
     cancel = models.CharField(max_length=15) # True | False | NULL
@@ -113,12 +113,20 @@ class MeetingCanceled(models.Model):
     meeting_id = models.ForeignKey('Meeting', unique=True, db_column='meeting_id',related_name='+')
     host_id = models.ForeignKey('user.UserSPADE',db_column='host_id',related_name='+')
     date = models.DateField()
-    period = models.IntegerField()
+    period = models.CharField(max_length=60) # NULL | False | Period 
     stage = models.CharField(max_length=24) # GEN | INVT | FB
     reason = models.CharField(max_length=765)
     class Meta:
         db_table = u'meeting_canceled'
-
+        
+    def period_time(self):
+        if self.period.isdigit():
+            
+            time = period2Time(int(self.period))
+            return time
+        else:
+            return None
+        
 """
 MeetingSuccess
 
@@ -132,9 +140,17 @@ class MeetingSuccess(models.Model):
     host_id = models.ForeignKey('user.UserSPADE',db_column='host_id')
     date = models.DateField()
     period = models.IntegerField()
+    
     class Meta:
         db_table = u'meeting_success'
-
+        
+    def period_time(self):
+        if self.period:
+            time = period2Time(self.period)
+            return time
+        else:
+            return None
+    
 """
 MSA
 
@@ -175,10 +191,60 @@ Model functions
 getMeetingSuccessList()
 Get list of successful meetings that are not canceled (truly and temporarily successful)
 i.e. meetings in dms.meeting_success and not in dms.meeting_canceled
+
+Meeting dates after TODAY will be excluded from the results
 """
 def getMeetingSuccessList():
+    import datetime
+    today = datetime.date.today()
     meeting_canceled = MeetingCanceled.objects.all().values('meeting_id').query
-    meeting_list = MeetingSuccess.objects.exclude(meeting_id__in=meeting_canceled)
+    meeting_list = MeetingSuccess.objects.exclude(meeting_id__in=meeting_canceled).filter(date__gt=today).order_by('date','id')
     return meeting_list
 
 
+"""
+getAllMeetingSuccessList()
+
+Get all successful meetings that are not canceled.
+Including those dates before TODAY
+"""
+
+def getAllMeetingSuccessList():
+    meeting_list = MeetingSuccess.objects.all()
+    return meeting_list
+
+"""
+getMeetingCanceledList()
+
+Get list of canceled meetings (dms.meeting_canceled)
+"""
+def getMeetingCanceledList():
+    meeting_canceled = MeetingCanceled.objects.all()
+    return meeting_canceled
+
+"""
+period2Time()
+Convert a interger period (consecutive period) into time format (hh:00 - hh:00)
+Only for CONSECUTIVE PERIOD, not COMBINED PERIOD !!!
+"""
+    
+def period2Time(period):
+    from agenda.views import dailyPeriod2list
+    list = dailyPeriod2list(period)
+    start = -1
+    end = -1
+    counter = 0
+    for h in list:
+        if start == -1:
+            if h == 0:
+                start = counter
+        else:
+            if h == 1:
+                end = counter
+                break     
+        counter += 1
+    start_time = "%02d:00"%(start+6)
+    end_time = "%02d:00"%(end+6)
+    time = "%s - %s"%(start_time, end_time)
+    return time
+    

@@ -12,13 +12,26 @@
   	<a class="navlink" href="/agenda/"> Agenda</a>
 	{% endif %} 
 {% endwith %}  
-{% with request.path|slice:":9" as path %}
-    {% if path == '/meeting/' %}
+{% with request.path|slice:":13" as path %}
+    {% if path|slice:":9" = '/meeting/' and path != '/meeting/ca/' and path != '/meeting/msa/'%}
     <a class="navlink_chosen" href="/meeting/">Meetings</a>
     {% else %} 
     <a class="navlink" href="/meeting/">Meetings</a>
     {% endif %} 
 {% endwith %}  
-<a class="navlink" href="/meeting/msa/"> Scheduling</a>
-<a class="navlink" href="/meeting/ca/"> Participation</a>
+{% with request.path|slice:":13" as path%}
+    {% if path == '/meeting/msa/' %}
+    <a class="navlink_chosen" href="/meeting/msa/"> Scheduling</a>
+    {% else %} 
+    <a class="navlink" href="/meeting/msa/"> Scheduling</a>
+    {% endif %} 
+{% endwith %} 
+{% with request.path|slice:":12" as path%}
+    {% if path == '/meeting/ca/' %}
+    <a class="navlink_chosen" href="/meeting/ca/"> Participation</a>
+    {% else %} 
+    <a class="navlink" href="/meeting/ca/"> Participation</a>
+    {% endif %} 
+{% endwith %}  
+
 <a class="navlink" href="/admin/"> Admin</a>

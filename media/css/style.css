@@ -230,6 +230,7 @@ table.login_table td{
 table.dmstable {
 	color:#383838;
 	border-collapse:collapse; 
+	margin:2px 0 10px 0;
 }
 
 
@@ -327,7 +328,7 @@ table.agendatable a {
 }
 
 .agenda_month{
-	margin:5px 0 0 0;
+	margin:4px 0 10px 0;
 	text-align:center;
 	float:left;
 }
@@ -436,4 +437,42 @@ table.agenda_timetable td {
 	color:#383838;
 	display:block;
 	clear:both;
+}
+
+.pagination {
+	display:block;
+	color:#696969;
+	margin:0 0 4px 0;
+}
+
+.step-links {
+	padding:0;
+}
+
+.step-links a {
+	padding:2px 6px;
+	text-decoration:none;
+	color:#696969;
+	
+}
+
+.step-links a:hover {
+    color:#FFF;
+    background-color:#aaa;
+}
+
+.current_page {
+	padding:2px 6px;
+	color:#FFF;
+    background-color:#aaa;
+}
+
+.nolink {
+	padding:2px 6px;
+	
+}
+
+table caption {
+	margin:4px 0;
+	
 }

@@ -1,0 +1,37 @@
+<div class="pagination">
+    <span class="step-links">
+        {% if data.has_previous %}
+            <a href="?page={{ data.previous_page_number }}">Prev</a>
+        {% else %}
+            <span class="nolink">Prev</span>
+        {% endif %}
+        {% for p in data.paginator.page_range %}
+
+                {% if p == data.number %}
+                    <span class="current_page">{{p}}</span>
+                {% else %}
+                    {% if p > data.number|add:"-3" and p < data.number|add:"3" %}
+                        <a href="?page={{ p }}">{{p}}</a>
+                    {% elif p == 1 %}
+                       {% if p == data.number|add:"-3"  %}
+                            <a href="?page={{ p }}">{{p}}</a>
+                       {% else %}
+                            <a href="?page={{ p }}">{{p}}</a> ...
+                       {% endif %}
+                    {% elif p == data.paginator.num_pages %}
+                       {% if p == data.number|add:"3"  %}
+                           <a href="?page={{ p }}">{{p}}</a>
+                        {% else %}
+                           ... <a href="?page={{ p }}">{{p}}</a>
+                        {% endif %}
+                    {% endif %}
+                {% endif %} 
+        {% endfor %}
+
+        {% if data.has_next %}
+            <a href="?page={{ data.next_page_number }}">Next</a>
+        {% else %}
+            <span class="nolink">Next</span>
+        {% endif %}
+    </span>
+</div>

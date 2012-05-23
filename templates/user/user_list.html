@@ -4,6 +4,10 @@
 {% block subject %}
 	<h3>User list</h3>
 {% endblock %}
+{%with data as data %}
+{%include "t_pagination.html" %}
+{% endwith %}
+
 <table class="dmstable">
 <tr>
 	<th>
