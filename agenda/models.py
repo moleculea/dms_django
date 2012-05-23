@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from user.models import UserSPADE
+from user.models import UserSPADE, UserConfig
 from django import forms
 
 import sys
@@ -124,9 +124,19 @@ def getEvent(user_id,date):
     event = agenda.event_id
     return event
 
+
+"""
+getUserConfig()
+Get the UserConfig instance
+"""
+def getUserConfig(user_id):
+    user_config = UserConfig.objects.get(user_id=user_id)
+    return user_config
+
 """
 saveDailyPeriod()
 Save a daily period to a specific date of a user
+If insert a daily period, meantime, insert default config pref_period/best_period
 """
 
 def saveDailyPeriod(id, user_id, date, daily_period):
@@ -139,9 +149,20 @@ def saveDailyPeriod(id, user_id, date, daily_period):
         
     # Insert
     else:
+        # Insert the default config pref_period and best_period at the same time
+        pref_period = None
+        best_period = None
+        user_config = getUserConfig(user_id)
+        
+        if user_config.pref_period:
+            pref_period = user_config.pref_period
+            
+        if user_config.best_period:
+            best_period = user_config.best_period    
+        
         user = User(id=user_id)
         user_spade = UserSPADE(user_id=user)
-        agenda = UserAgenda(user_id=user_spade, date=date, daily_period=daily_period)
+        agenda = UserAgenda(user_id=user_spade, date=date, daily_period=daily_period, pref_period = pref_period, best_period= best_period)
         agenda.save()
 
 
@@ -170,6 +191,7 @@ def saveTypePeriod(id, user_id, date, pref_period, best_period):
 """
 saveEvent()
 Save event
+If insert a event meantime, insert default config pref_period/best_period
 """
 
 def saveEvent(user_id, date, event, subperiod):
@@ -191,6 +213,17 @@ def saveEvent(user_id, date, event, subperiod):
             
         # Update date and insert event
         else:
+            # Insert the default config pref_period and best_period at the same time
+            pref_period = None
+            best_period = None
+            user_config = getUserConfig(user_id)
+            
+            if user_config.pref_period:
+                pref_period = user_config.pref_period
+                
+            if user_config.best_period:
+                best_period = user_config.best_period                
+
             # Insert event to dms.event
             event = instantiateEvent(subperiod,event)
             event.save()
@@ -202,7 +235,7 @@ def saveEvent(user_id, date, event, subperiod):
             # Update date to dms.user_agenda, with foreign key to event
             user = User(id=user_id)
             user_spade = UserSPADE(user_id=user)
-            agenda = UserAgenda(pk=id,user_id=user_spade,date=date,event_id=event)
+            agenda = UserAgenda(pk=id,user_id=user_spade,date=date,event_id=event,pref_period = pref_period, best_period = best_period)
             agenda.save()
 
     # Update event
@@ -213,6 +246,17 @@ def saveEvent(user_id, date, event, subperiod):
         e = instantiateEvent(subperiod,event,e)
         e.save()
         
+"""
+saveConfigPeriod()
+Save the default config for Preferred Period and Best Period
+
+"""
+def saveConfigPeriod(user_id, pref_period, best_period):
+    user_config = UserConfig.objects.get(user_id=user_id)
+    user_config.pref_period = pref_period
+    user_config.best_period = best_period
+    user_config.save()
+
     
 """
 instantiateEvent()
@@ -356,7 +400,48 @@ def changeTypePeriod(user_id, date, action, subperiod, type):
      
     # Update or insert pref_period/best_period           
     saveTypePeriod(id, user_id, date, pref_period, best_period)                
- 
+
+
+
+"""
+changeConfigPeriod()
+Change the default Preferred Period and Best Period at /agenda/config
+"""
+
+def changeConfigPeriod(user_id, action, subperiod, type):
+    
+    pref_period = REVERSE
+    best_period = REVERSE
+    
+    # Get user config
+    user_config = getUserConfig(user_id)
+    if user_config.pref_period:
+        pref_period = user_config.pref_period
+    if user_config.best_period:
+        best_period = user_config.best_period
+    
+    if action == "occupy":
+        if type == "pref":
+            # Change 1 into 0
+            pref_period = pref_period & DIGIT[subperiod]
+            best_period = best_period | RDIGIT[subperiod]    
+            
+        if type == "best":
+            # Change 1 into 0
+            best_period = best_period & DIGIT[subperiod]
+            pref_period = pref_period | RDIGIT[subperiod]
+            
+    if action == "idle":
+        if type == "pref":
+            # Change 0 into 1
+            pref_period = pref_period | RDIGIT[subperiod]
+        if type == "best":
+            # Change 0 into 1
+            best_period = best_period | RDIGIT[subperiod]
+            
+    saveConfigPeriod(user_id, pref_period, best_period)
+
+
 """
 none2Zero()
 If the period is None, convert it into 0

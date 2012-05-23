@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
-#from meeting.models import UserMSA, UserCA
 
 """
 UserSPADE
@@ -64,7 +63,7 @@ def getUserConfig(user_id):
     config = UserConfig.objects.get(user_id=user_id)
     return config
 
-
+"""
 def displayUserConfig(user_id):
     pass
 
@@ -74,7 +73,7 @@ def updateUserConfig():
 def doUserInvitee():
     pass
 
-
+"""
 
 """
 # Signal processing #

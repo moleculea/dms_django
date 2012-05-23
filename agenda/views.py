@@ -7,7 +7,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 
 # Models
-from agenda.models import UserAgenda, Event, EventForm, isDateEmpty, getPeriod, changeDailyPeriod, changeTypePeriod, isEventEmpty, getEvent, saveEvent
+from agenda.models import *
 from user.models import getUserConfig
 # login_required decorator
 from django.contrib.auth.decorators import login_required
@@ -20,10 +20,11 @@ index()
 @login_required
 def index(request):
     user_id = request.user.id
+    username = request.user.username
     agenda = UserAgenda.objects.filter(user_id=user_id).order_by('date')
     
-    context = {'agenda':agenda}
-    return render_to_response('agenda/agenda.html',context)
+    context = {'agenda':agenda,'username':username}
+    return render_to_response('agenda/agenda.html',context,context_instance=RequestContext(request))
 
 """
 config()
@@ -31,35 +32,48 @@ config()
 
 """
 @login_required
-def config(request):
+def config(request,type=None,action=None,period=None):
     
-    user_id = request.user.id
-    pref_period = 65535
-    best_period = 65535
-    
-    user_config = getUserConfig(user_id)
-    
-    if user_config.pref_period:
-        pref_period = user_config.pref_period
+    # Render default config
+    if type==None and action==None and period==None:
+        user_id = request.user.id
+        username = request.user.username
+        pref_period = 65535
+        best_period = 65535
         
-    if user_config.best_period:
-        best_period = user_config.best_period
+        user_config = getUserConfig(user_id)
         
-    pref_period = dailyPeriod2list(pref_period)
-    best_period = dailyPeriod2list(best_period)
+        if user_config.pref_period:
+            pref_period = user_config.pref_period
+            
+        if user_config.best_period:
+            best_period = user_config.best_period
+            
+        pref_period = dailyPeriod2list(pref_period)
+        best_period = dailyPeriod2list(best_period)
+        
+        context = {'pref_period':pref_period,'best_period':best_period,'username':username}    
+        
+        return render_to_response('agenda/agenda_config.html',context,context_instance=RequestContext(request))
     
-    context = {'pref_period':pref_period,'best_period':best_period}    
+    # Update default config
+    else:
+        user_id = request.user.id
+        subperiod = int(period)
+        changeConfigPeriod(user_id, action, subperiod, type)
+        
+        # Redirect backt to config page
+        return HttpResponseRedirect("/agenda/config/")
     
-    return render_to_response('agenda/agenda_config.html',context)
-    
-    
-    
+
 """
 year_view()
 
 """
 @login_required
 def year_view(request,year):
+    
+    username = request.user.username
     import datetime
     year = int(year)
     months = [] # List of the first days of 12 months in this year
@@ -70,8 +84,8 @@ def year_view(request,year):
         day = datetime.date(year,i,1)
         months.append(day)
     
-    context = {'year':year,'months':months,'today':today}
-    return render_to_response('agenda/agenda_year.html',context)
+    context = {'year':year,'months':months,'today':today,'username':username}
+    return render_to_response('agenda/agenda_year.html',context,context_instance=RequestContext(request))
 
 
 """
@@ -81,6 +95,7 @@ month_view()
 @login_required
 def month_view(request,year,month):
     user_id = request.user.id
+    username = request.user.username
     import calendar,datetime
     agenda = calendar.Calendar(6)
     year = int(year)
@@ -127,8 +142,8 @@ def month_view(request,year,month):
         
     htmltb += "</table>\n"
 
-    context = {'htmltb':htmltb,'date':date,'prev':prev,'next':next}
-    return render_to_response('agenda/agenda_month.html',context)
+    context = {'htmltb':htmltb,'date':date,'prev':prev,'next':next,'username':username}
+    return render_to_response('agenda/agenda_month.html',context,context_instance=RequestContext(request))
 
 
 """
@@ -144,6 +159,7 @@ def day_view(request,year,month,day,type=None,action=None,period=None):
         month = int(month)
         day = int(day)
         user_id = request.user.id
+        username = request.user.username
         daily_period_status = [0 for i in range(0,16)]
         pref_period = [1 for i in range(0,16)]
         best_period = [1 for i in range(0,16)]
@@ -170,7 +186,7 @@ def day_view(request,year,month,day,type=None,action=None,period=None):
         next = nextDay(date)
         
         time = [str(i).zfill(2) for i in range(6,23)]
-        context = {'date':date,'daily_period_status':daily_period_status,'pref_period':pref_period,'best_period':best_period,'time':time,'prev':prev,'next':next}
+        context = {'date':date,'daily_period_status':daily_period_status,'pref_period':pref_period,'best_period':best_period,'time':time,'prev':prev,'next':next,'username':username}
         
         return render_to_response('agenda/agenda_day.html',context, context_instance=RequestContext(request))
     
@@ -229,7 +245,6 @@ def event_view(request,year,month,day):
             
             # user_id
             user_id = request.user.id
-            
             year = int(year)
             month = int(month)
             day = int(day)
@@ -248,12 +263,14 @@ def event_view(request,year,month,day):
         return HttpResponseRedirect("/agenda/%s/%s/%s/event/"%(year,str(month).zfill(2),str(day).zfill(2)))
     
     else:
+        
         get = None
         form = None
         year = int(year)
         month = int(month)
         day = int(day)
         user_id = request.user.id
+        username = request.user.username
         daily_period_status = [0 for i in range(0,16)]
 
         import datetime
@@ -290,7 +307,7 @@ def event_view(request,year,month,day):
             form = EventForm(data)
             
 
-        context = {'date':date,'daily_period_status':daily_period_status,'prev':prev,'next':next,'get':get,'form':form}
+        context = {'date':date,'daily_period_status':daily_period_status,'prev':prev,'next':next,'get':get,'form':form,'username':username}
         return render_to_response('agenda/agenda_event.html',context, context_instance=RequestContext(request))
 
 

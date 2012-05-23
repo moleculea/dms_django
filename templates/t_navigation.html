@@ -1,6 +1,24 @@
-<a class="navlink" href="/user/"> User</a>
-<a class="navlink" href="/agenda/"> Agenda</a>
-<a class="navlink" href="/meeting/"> Meetings</a>
+{% with request.path|slice:":6" as path %}
+  	{% if path == '/user/' %}
+  	<a class="navlink_chosen" href="/user/">User</a>
+  	{% else %} 
+  	<a class="navlink" href="/user/">User</a>
+	{% endif %} 
+{% endwith %}
+{% with request.path|slice:":8" as path %}
+  	{% if path == '/agenda/' %}
+  	<a class="navlink_chosen" href="/agenda/">Agenda</a>
+  	{% else %} 
+  	<a class="navlink" href="/agenda/"> Agenda</a>
+	{% endif %} 
+{% endwith %}  
+{% with request.path|slice:":9" as path %}
+    {% if path == '/meeting/' %}
+    <a class="navlink_chosen" href="/meeting/">Meetings</a>
+    {% else %} 
+    <a class="navlink" href="/meeting/">Meetings</a>
+    {% endif %} 
+{% endwith %}  
 <a class="navlink" href="/meeting/msa/"> Scheduling</a>
 <a class="navlink" href="/meeting/ca/"> Participation</a>
 <a class="navlink" href="/admin/"> Admin</a>

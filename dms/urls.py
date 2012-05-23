@@ -21,9 +21,9 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
-	#url(r'^agenda/(?P<year>\d{4})/(?P<month>\d{2})/$','agenda.views.show'),
     url(r'^agenda/',include('agenda.urls')),
     url(r'^user/',include('user.urls')),
+    url(r'^meeting/',include('meeting.urls')),
 )
 
 urlpatterns += staticfiles_urlpatterns()

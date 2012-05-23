@@ -1,0 +1,30 @@
+{% extends "meeting/meeting_base.html" %}
+{% load url from future %}
+{% block title %}Meetings - DMS{% endblock %}
+
+{% block content %}
+{% block subject %}
+	<h2>Meetings</h2>
+{% endblock %}
+<table class="dmstable">
+    <tr>
+    <th>ID</th>
+    <th>Host</th>
+    <th>Topic</th>
+    <th>Date</th>
+    <th>Time</th>
+    <th>Location</th>
+    </tr>
+    {% for meeting in meeting_list%}
+    <tr>
+    <td>{{meeting.id}}</td>
+    <td><a href="/user/?id={{meeting.host_id.user_id.id}}">{{meeting.host_id.user_name}}</a></td>
+    <td>{{meeting.meeting_id.topic}}</td>
+    <td><a href="/agenda/{{meeting.date|date:"Y/m/d/"}}">{{meeting.date}}</td>
+    <td>{{meeting.period}}</td>
+    <td>{{meeting.meeting_id.location}}</td>
+    </tr>
+    {%endfor%}
+
+</table>
+{% endblock %}

@@ -117,13 +117,23 @@ a.navlink{
 	color:#696969;
 	font-size:110%;
 	text-decoration:None;
-	padding:6px 12px;
-	margin:0 4px;
+	padding:18px 18px;
+	margin:0 2px;
 
 }
 a.navlink:hover {
 
 	color: #FFF;
+}
+
+
+a.navlink_chosen{
+	color: #FFF;
+	font-size:110%;
+	text-decoration:None;
+	padding:18px 18px;
+	margin:0 2px;
+	background:#6495ED;
 }
 /*
 Logout buttons
@@ -218,8 +228,10 @@ table.login_table td{
 }
 
 table.dmstable {
+	color:#383838;
 	border-collapse:collapse; 
 }
+
 
 table.dmstable th {
 	border:1px solid #aaa;
@@ -234,6 +246,7 @@ table.dmstable td {
 
 /* Agenda table */
 table.agendatable {
+	color:#383838;
 	border-collapse:collapse; 
 	display:block;
 	margin:0 0 4px 6px;
@@ -415,4 +428,12 @@ table.agenda_timetable td {
 .period_type{
 	padding:5px;
 	
+}
+
+.help_text{
+	margin:0 4px;
+	padding:4px 0;
+	color:#383838;
+	display:block;
+	clear:both;
 }

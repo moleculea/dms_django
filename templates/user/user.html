@@ -1,4 +1,5 @@
 {% extends "user/user_base.html" %}
+
 {% block title %}User - DMS{% endblock %}
 
 {% block content %}
@@ -32,9 +33,4 @@
     <td>{{invite}}</td>
 </tr>
 </table>
-{% endblock %}
-
-{% block logout %}
-{% include "in_logout.html" %}
-{{ block.super }}
 {% endblock %}

@@ -27,11 +27,26 @@
 
 <tr>
 	<td>
-	Agenda
+	Perferred Period
 	</td>
 	<td>
-	{{ agenda.pref }}<br/>
-	{{ agenda.best }}
+	{% if agenda.pref and agenda.pref != 65535 %}
+		Configured <a href="/agenda/config">[Config]</a>
+	{% else %}
+		Not configured <a href="/agenda/config">[Config]</a>
+	{% endif %}
+	</td>
+</tr>
+<tr>
+	<td>
+	Best Period
+	</td>
+	<td>
+	{% if agenda.best and agenda.best != 65535 %}
+		Configured <a href="/agenda/config">[Config]</a>
+	{% else %}
+		Not configured <a href="/agenda/config">[Config]</a>
+	{% endif %}
 	</td>
 </tr>
 
@@ -39,7 +54,3 @@
 
 {% endblock %}
 
-{% block logout %}
-{% include "in_logout.html" %}
-{{ block.super }}
-{% endblock %}

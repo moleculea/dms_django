@@ -3,10 +3,32 @@
 {% block sidebar %}
 <ul class="sidenav">
 	<li><a href="/agenda/config/">Config</a></li>
-	<li><a href="/agenda/{% now "Y/" %}">Year</a></li>
-	<li><a href="/agenda/{% now "Y/m/" %}"">Month</a></li>
-	<li><a href="/agenda/{% now "Y/m/d/" %}"">Day</a></li>
-	<li><a href="/agenda/{% now "Y/m/d/" %}event/"">Event</a></li>
+	{% if request.path|length >= 13 and request.path|slice:"15" != "/agenda/config/" %}
+		<li><a href="{{request.path|slice:"13"}}">Year</a></li>
+	{% else %}
+		<li><a href="/agenda/{% now "Y/" %}">Year</a></li>
+	{% endif %}
+	
+	{% if request.path|length >= 16 and request.path|slice:"15" != "/agenda/config/" %}		
+		<li><a href="{{request.path|slice:"16"}}">Month</a></li>
+	{% else %}
+		<li><a href="/agenda/{% now "Y/m/" %}"">Month</a></li>
+	{% endif %}
+	
+	{% if request.path|length >= 19 and request.path|slice:"15" != "/agenda/config/" %}		
+		<li><a href="{{request.path|slice:"19"}}">Day</a></li>
+	{% else %}
+		<li><a href="/agenda/{% now "Y/m/d/" %}"">Day</a></li>
+	{% endif %}
+	
+	{% if request.path|length >= 25 and request.path|slice:"15" != "/agenda/config/" %}	
+		<li><a href="{{request.path|slice:"25"}}">Event</a></li>
+	{% elif request.path|length == 19 %}
+		<li><a href="{{request.path|slice:"19"}}event">Event</a></li>
+	{% else %}
+		<li><a href="/agenda/{% now "Y/m/d/" %}event/"">Event</a></li>
+	{% endif %}
+	
 </ul>
 {% endblock %}
 
@@ -14,8 +36,4 @@
 {% endblock %}
 
 {% block content %}
-{% endblock %}
-
-{% block logout %}
-{{ block.super }}
 {% endblock %}

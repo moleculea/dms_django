@@ -34,7 +34,7 @@
 	</td>	
 	{% endif %}
 {% endfor %}
-<td><span class="period_type">O</span></td>
+<td><span class="period_type">D</span></td>
 </tr>
 </table>
 
@@ -75,9 +75,4 @@
 </table>
 <a href="/agenda/{{date|date:"Y/m/d/"}}event/" class="year_top">Event</a>
 </div>
-{% endblock %}
-
-{% block logout %}
-{% include "in_logout.html" %}
-{{ block.super }}
 {% endblock %}

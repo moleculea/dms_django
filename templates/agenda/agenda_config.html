@@ -11,7 +11,7 @@
 
 <table class="agendatable">
 <caption style="margin:4px 0">
-<b>Configure default Preferred Period / Best Period<b>
+<b>Default Preferred Period and Best Period<b>
 </caption>
 <tr>
 
@@ -48,11 +48,9 @@
 </tr>
 </table>
 
-
 </div>
-{% endblock %}
-
-{% block logout %}
-{% include "in_logout.html" %}
-{{ block.super }}
+<br/>
+<div class="help_text">
+Configured Perferred Period and Best Period will be rendered as default when Daily Period and event is arranged on new days.
+</div>
 {% endblock %}

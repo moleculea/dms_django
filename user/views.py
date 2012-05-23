@@ -8,8 +8,10 @@ from django.template import RequestContext
 from django.template.loader import get_template
 
 # Models
-from user.models import UserSPADE, UserConfig
 from django.contrib.auth.models import User
+from user.models import UserSPADE, UserConfig
+from agenda.models import getUserConfig
+
 
 # login_required decorator
 from django.contrib.auth.decorators import login_required
@@ -118,9 +120,26 @@ def config(request):
 
     username = request.user.username
     id = request.user.id
-    data = UserConfig.objects.get(pk=id)
-    agenda = {'pref':data.pref_period,'best':data.best_period}
-    c = RequestContext(request, {'msa': data.msa_id,'ca':data.ca_id,'agenda':agenda,'username':username})
+    user_config = getUserConfig(user_id=id)
+    pref_period = None
+    best_period = None
+    msa = None
+    ca = None
+    
+    if user_config.pref_period and user_config.pref_period != 65535:
+        pref_period= user_config.pref_period
+        
+    if user_config.best_period and user_config.best_period != 65535:
+        best_period= user_config.best_period
+    
+    if user_config.msa_id:
+        msa = user_config.msa_id
+        
+    if user_config.ca_id:
+        ca = user_config.ca_id  
+    agenda = {'pref':pref_period,'best':best_period}
+    
+    c = RequestContext(request, {'msa': msa,'ca': ca,'agenda':agenda,'username':username})
     t = get_template('user/user_config.html')
     return HttpResponse(t.render(c))
 

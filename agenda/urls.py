@@ -2,7 +2,6 @@
 URLconf
 agenda/
 
-
 """
 from django.conf.urls import patterns, include, url
 
@@ -27,5 +26,8 @@ urlpatterns = patterns('agenda.views',
     url(r'^(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})/event/$','event_view',name='event'),
 
     # Config
+    url(r'^config/(?P<type>[^/]+)/(?P<action>[^/=]+)=(?P<period>\d{1,2})/$','config'),
+    
+    # Config (update best_period and pref_period)
     url(r'^config/$','config'),
 )
