@@ -19,13 +19,20 @@
     Group
     </th>
     <th>
-    Status
+    VIP
+    </th>
+    <th>
+    Remove
     </th>
 </tr>
 {% for user in user_list %}
+{% if user.invitee_status %}
+<tr style="background-color:#FFA07A">
+{% else %}
 <tr>
+{% endif %}
     <td>
-<a href="/user/id={{user.id}}/">{{user.username}}</a>
+<a href="/user/id={{user.invitee_id.user_id.id}}/">{{user.invitee_id.user_name}}</a>
     </td>
     <td>
 {% if user.is_superuser%}
@@ -34,7 +41,29 @@ Administrator
 User
 {% endif %}
     </td>
-    <td></td>
+    <td style="padding:0 4px 0 0px">
+{% if user.invitee_status %}
+    {%if "?page" in request.get_full_path %}
+    <a href="{{request.get_full_path}}&nonvip={{user.invitee_id.user_id.id}}"><span class="agenda_period" style="width:100%;padding:2px;">&nbsp;</span></a>
+    {% else %}
+<a href="?nonvip={{user.invitee_id.user_id.id}}"><span class="agenda_period" style="width:100%;padding:2px;">&nbsp;</span></a>    
+    {% endif %}
+{% else %}
+    {%if "?page" in request.get_full_path %}
+    <a href="{{request.get_full_path}}&vip={{user.invitee_id.user_id.id}}"><span class="agenda_period" style="width:100%;padding:2px;">&nbsp;</span></a>
+    {% else %}
+<a href="?vip={{user.invitee_id.user_id.id}}"><span class="agenda_period" style="width:100%;padding:2px;">&nbsp;</span></a>    
+    {% endif %}
+{% endif %}   
+    </td>
+    <td style="padding:0 4px 0 0px">
+    {%if "?page" in request.get_full_path %}
+    <a href="{{request.get_full_path}}&remove={{user.invitee_id.user_id.id}}"><span class="agenda_period" style="width:100%;padding:2px;">&nbsp;</span></a>
+    {% else %}
+<a href="?remove={{user.invitee_id.user_id.id}}"><span class="agenda_period" style="width:100%;padding:2px;">&nbsp;</span></a>    
+    {% endif %}    
+    
+    </td>
 </tr>
 
 {% endfor%}

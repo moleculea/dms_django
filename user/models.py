@@ -52,6 +52,7 @@ class UserInvitee(models.Model):
     
     class Meta:
         db_table = u'user_invitee'
+        
 
 
 """
@@ -63,18 +64,83 @@ def getUserConfig(user_id):
     config = UserConfig.objects.get(user_id=user_id)
     return config
 
-"""
-def displayUserConfig(user_id):
-    pass
-
-def updateUserConfig():
-    pass
-
-def doUserInvitee():
-    pass
 
 """
+getUserInvitee()
+Retun UserInvitee instance
 
+"""
+def getUserInvitee(host_id):
+    user_invitee = UserInvitee.objects.filter(host_id=host_id)
+    return user_invitee
+
+
+"""
+getUserInviteeIDList()
+
+Return a list of invitee id
+"""
+def getUserInviteeIDList(host_id):
+    user_invitee = UserInvitee.objects.filter(host_id=host_id).values_list('invitee_id',flat=True)
+    return user_invitee
+
+"""
+saveUserInvitee()
+Save (insert) user invitee 
+"""
+def saveUserInvitee(host_id,invitee_id):
+    # If empty, insert
+    if isUserInviteeEmpty(host_id,invitee_id):
+        host_id = UserSPADE.objects.get(user_id=host_id)
+        invitee_id = UserSPADE.objects.get(user_id=invitee_id)
+        
+        user_invitee = UserInvitee(host_id=host_id,invitee_id=invitee_id,invitee_status=0)
+        user_invitee.save()
+        
+    # If not empty, do nothing  
+    else:
+        pass
+
+"""
+updateInviteeStatus()
+Update user_invitee.invitee_status
+
+"""
+
+def updateInviteeStatus(host_id,invitee_id,vip=True):
+    user_invitee = UserInvitee.objects.get(host_id=host_id,invitee_id=invitee_id)
+    # Make it VIP
+    if vip:
+        user_invitee.invitee_status = 1
+        user_invitee.save()
+        
+    # Make it Non-VIP
+    else:
+        user_invitee.invitee_status = 0
+        user_invitee.save()
+
+"""
+
+deleteUserInvitee()
+
+Delete a specific invitee from user_invitee
+
+"""
+
+def deleteUserInvitee(host_id,invitee_id):
+    user_invitee = UserInvitee.objects.get(host_id=host_id,invitee_id=invitee_id)
+    user_invitee.delete()
+    
+    
+def isUserInviteeEmpty(host_id,invitee_id):
+    user_invitee = UserInvitee.objects.filter(host_id=host_id,invitee_id=invitee_id)
+    if len(user_invitee) > 0:
+        return False
+    else:
+        return True
+
+    
+        
 """
 # Signal processing #
 

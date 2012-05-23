@@ -28,6 +28,7 @@ urlpatterns = patterns('agenda.views',
     # Config
     url(r'^config/(?P<type>[^/]+)/(?P<action>[^/=]+)=(?P<period>\d{1,2})/$','config'),
     
+
     # Config (update best_period and pref_period)
     url(r'^config/$','config'),
 )

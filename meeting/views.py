@@ -11,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 
 # Models
 from meeting.models import *
+from user.models import getUserInviteeIDList,saveUserInvitee,getUserInvitee,updateInviteeStatus,deleteUserInvitee
 
 # Pagination
 from django.core.paginator import Paginator
@@ -93,9 +94,29 @@ scheduling_invitee()
 def scheduling_invitee(request):
     
     username = request.user.username
-    user_list = User.objects.all()
-    user_list = pagination_creator(request, user_list, 10)
-    context = {'username':username,'user_list':user_list}
+    user_id = request.user.id
+    
+    if request.GET:
+        # Status update
+        # VIP
+        vip = request.GET.get('vip', None)
+        if vip:
+            updateInviteeStatus(user_id,vip,True)
+            
+        # Non-VIP
+        nonvip = request.GET.get('nonvip', None)
+        if nonvip:
+            updateInviteeStatus(user_id,nonvip,False)
+            
+        # Remove invitee
+        remove = request.GET.get('remove', None)
+        if remove:
+            deleteUserInvitee(user_id,remove)
+        
+    user_list = getUserInvitee(user_id)
+    user_list = pagination_creator(request, user_list,5)
+    
+    context = {'username':username,'user_list':user_list,'request':request}
     return render_to_response('meeting/meeting_scheduling_invitee.html',context,context_instance=RequestContext(request))
 
 """
@@ -105,9 +126,18 @@ scheduling_invitee_config()
 def scheduling_invitee_config(request):
     
     username = request.user.username
-    user_list = User.objects.all()
-    user_list = pagination_creator(request, user_list, 10)
-    context = {'username':username,'user_list':user_list}
+    user_id = request.user.id
+
+    if request.GET:
+        invitee_id = request.GET.get('add', None)
+        # If exists, insert it into dms.user_invitee for user_id (host)
+        if invitee_id:
+            saveUserInvitee(user_id,invitee_id)
+
+    user_list = User.objects.exclude(id=user_id)
+    user_invitee = getUserInviteeIDList(user_id)
+    user_list = pagination_creator(request, user_list, 5)
+    context = {'username':username,'user_list':user_list,'user_invitee':user_invitee,'request':request}
     return render_to_response('meeting/meeting_scheduling_invitee_config.html',context,context_instance=RequestContext(request))
 
 
@@ -124,16 +154,16 @@ Return the data instance
 """
 
 def pagination_creator(request, instance, num_per_page):
-    paginator = Paginator(instance, 10)
+    paginator = Paginator(instance, num_per_page)
+    
     if request.GET:
-        page = request.GET.get('page')
+        page = request.GET.get('page',1)
     else:
         page = 1
-        
-    try:
-        instance = paginator.page(page)
-    except PageNotAnInteger:
-        instance = paginator.page(1)
-    except EmptyPage:
-        instance = paginator.page(paginator.num_pages)         
+
+    instance = paginator.page(page)
+    #except PageNotAnInteger:
+        #instance = paginator.page(1)
+    #except EmptyPage:
+        #instance = paginator.page(paginator.num_pages)         
     return instance

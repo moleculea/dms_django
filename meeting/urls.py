@@ -24,6 +24,9 @@ urlpatterns = patterns('meeting.views',
     # Scheduling invitee config (add or remove invitee from user list)
     url(r'^msa/invitee/config/$','scheduling_invitee_config'),    
 
+    # Scheduling invitee config (add or remove invitee from user list)
+    #url(r'^msa/invitee/config/\?add=\d+/$','scheduling_invitee_config'),   
+    
     # Participation (CA Index)
     url(r'^ca/$','participation_index'),
     

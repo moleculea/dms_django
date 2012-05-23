@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 from user.models import UserSPADE, UserConfig
+
 from django import forms
+
 
 """
 UserMSA
@@ -221,6 +223,8 @@ Get list of canceled meetings (dms.meeting_canceled)
 def getMeetingCanceledList():
     meeting_canceled = MeetingCanceled.objects.all()
     return meeting_canceled
+
+
 
 """
 period2Time()

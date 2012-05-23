@@ -19,11 +19,15 @@
     Group
     </th>
     <th>
-    Status
+    Add
     </th>
 </tr>
 {% for user in user_list %}
+{% if user.id in user_invitee %}
+<tr style="background:#B0C4DE">
+{% else %}
 <tr>
+{% endif %}
     <td>
 <a href="/user/id={{user.id}}/">{{user.username}}</a>
     </td>
@@ -34,7 +38,18 @@ Administrator
 User
 {% endif %}
     </td>
-    <td></td>
+    <td style="padding:0 4px 0 0px">
+    {% if user.id in user_invitee %}
+    &nbsp;
+    {% else %}
+        {%if "?page" in request.get_full_path %}
+        <a href="{{request.get_full_path}}&add={{user.id}}"><span class="agenda_period" style="width:100%;padding:2px;">&nbsp;</span></a>
+        {% else %}
+        <a href="?add={{user.id}}"><span class="agenda_period" style="width:100%;padding:2px;">&nbsp;</span></a>
+        {%endif%}
+    
+    {% endif %}
+    </td>
 </tr>
 
 {% endfor%}
