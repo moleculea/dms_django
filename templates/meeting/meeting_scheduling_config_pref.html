@@ -1,0 +1,45 @@
+{% extends "meeting/meeting_scheduling_base.html" %}
+{% load url from future %}
+{% block title %}Meeting scheduling configuration - DMS{% endblock %}
+
+{% block content %}
+{% block subject %}
+    <h3>Second step: specify Preference Period</h3>
+{% endblock %}
+<div class="agenda_month">
+<table class="agenda_timetable">
+<tr>
+{% for t in time %}
+    <td>
+    <span class="agenda_time">{{t}}</span>
+    </td>
+{% endfor %}
+</tr>
+</table>
+<table class="agendatable">
+<tr>
+{% for status in pref_period %}
+    {% if not status %}
+    <td>
+    <a href="?cancel={{forloop.counter0}}"><span class="agenda_period_notempty">&nbsp;</span></a>
+    </td>
+    {% else %}
+    <td>
+    <a href="?select={{forloop.counter0}}"><span class="agenda_period">&nbsp;</span></a>
+    </td>   
+    {% endif %}
+{% endfor %}
+</tr>
+</table>
+</div>
+<div class="help_text" >
+<div class="lengend_box" style="background-color:#B0C4DE"></div> Preference Period set
+</div>
+<div class="help_text">
+<input type="button" value="Back" onClick="javascript:window.history.back();">
+<input type="button" value="Next" onClick="javascript:location.href = '/meeting/msa/config/init/';">
+</div>
+<div class="help_text">
+Select Preference Period within which you want the meeting to be held and click "Next" button.<br/> The default Preference Period is 6:00 - 22:00 (all day); unselect the period within which you don't want the meeting to be held.
+</div>
+{% endblock %}

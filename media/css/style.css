@@ -448,10 +448,11 @@ table.agenda_timetable td {
 }
 
 .help_text{
-	margin:0 4px;
+	margin:0 4px 8px 6px;
 	padding:4px 0;
 	color:#383838;
 	display:block;
+    line-height:1.3em;
 	clear:both;
 }
 
@@ -491,4 +492,28 @@ table.agenda_timetable td {
 table caption {
 	margin:4px 0;
 	
+}
+
+.lengend_box {
+	border:1px solid #aaa;
+	width:15px;
+	height:15px;
+	display:inline-block;
+	vertical-align:bottom;
+}
+
+.delimit_select{
+	width:100%;
+}
+
+.conf_method_select{
+	width:100%;
+}
+
+.dynamic_content {
+	font-size:92%;
+}
+
+.dmstable a{
+	color:#4169E1;
 }

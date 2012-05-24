@@ -3,7 +3,11 @@ from django.contrib.auth.models import User
 from user.models import UserSPADE, UserConfig
 
 from django import forms
+from django.forms import ModelForm
 
+import sys
+sys.path.append('/home/anshichao/dms/spade/Algorithms')
+from DIGIT import *
 
 """
 UserMSA
@@ -67,36 +71,14 @@ class Meeting(models.Model):
     host_id = models.ForeignKey('user.UserSPADE',db_column='host_id',related_name='+')
     
     # Initial parameters
-    LENGTH_CHOICES = (
-        (1,'1 hour'),
-        (2,'2 hours'),
-        (3,'3 hours'),
-        (4,'4 hours'), 
-        (5,'5 hours'),  
-    )
-    
-    length = models.IntegerField(choices=LENGTH_CHOICES)
+    length = models.IntegerField()
     day_range = models.CharField(max_length=1500)
     pref = models.IntegerField()
     topic = models.CharField(max_length=1500)
     location = models.CharField(max_length=1500,blank=True)
-    
-    SEARCH_BIAS_CHOICES = (
-        ('AVERAGE_IDLE','Average idleness'),
-        ('DAY_LENGTH','Day length'),
-    )    
-    search_bias = models.CharField(max_length=60,choices=SEARCH_BIAS_CHOICES,blank=True)
-    
-    DELIMIT_CHOICES = (
-        (1,'1'), (2,'2'), (3,'3'), (4,'4'), (5,'5'), (6,'6'), (7,'7'), (8,'8'),
-    )    
-    delimit = models.IntegerField(null=True,choices=DELIMIT_CHOICES,blank=True)
-    
-    CONF_METHOD_CHOICES = (
-        ('AUTO','Automatic'),
-        ('PROMPT','Ask me'),
-    )        
-    conf_method = models.CharField(max_length=60,choices=CONF_METHOD_CHOICES,blank=True)
+    search_bias = models.CharField(max_length=60,blank=True)
+    delimit = models.IntegerField(null=True,blank=True)
+    conf_method = models.CharField(max_length=60)
     
     # Functional columns
     conf_period = models.CharField(max_length=60,blank=True) # True | False | NULL | Period
@@ -108,6 +90,45 @@ class Meeting(models.Model):
     
     class Meta:
         db_table = u'meeting'        
+
+"""
+MeetingForm
+
+Model form of Meeting
+"""
+class MeetingForm(ModelForm):
+    LENGTH_CHOICES = (
+        (1,'1 hour'),
+        (2,'2 hours'),
+        (3,'3 hours'),
+        (4,'4 hours'), 
+        (5,'5 hours'),  
+    )
+    
+    SEARCH_BIAS_CHOICES = (
+        ('AVERAGE_IDLE','Average idleness'),
+        ('DAY_LENGTH','Day length'),
+    )    
+    
+    DELIMIT_CHOICES = (
+        (1,'1'), (2,'2'), (3,'3'), (4,'4'), (5,'5'), (6,'6'), (7,'7'), (8,'8'),
+    )  
+    
+    CONF_METHOD_CHOICES = (
+        ('AUTO','Automatic'),
+        ('PROMPT','Ask me'),
+    )      
+    
+    length = forms.ChoiceField(choices=LENGTH_CHOICES)
+    search_bias = forms.ChoiceField(choices=SEARCH_BIAS_CHOICES)
+    delimit = forms.ChoiceField(choices=DELIMIT_CHOICES, widget=forms.Select(attrs={'class':'delimit_select'}))
+    conf_method = forms.ChoiceField(choices=CONF_METHOD_CHOICES, widget=forms.Select(attrs={'class':'conf_method_select'}))
+    
+    class Meta:
+        model = Meeting
+        fields = ('topic', 'length', 'location','search_bias','delimit','conf_method')
+
+
 
 """
 MeetingStat
@@ -206,6 +227,16 @@ class CA(models.Model):
     class Meta:
         db_table = u'ca'
 
+
+class ParticipationConfigForm(forms.Form):
+    
+    # Small bugs, not userd to render in HTML, but only to receive POST
+    PARTICIPATE_CHOICES = ((1,'Yes'),(0,'No'))
+    ACCEPT_CHOICES = (('True','Accept'),('False','Decline'),('','Silent'))
+    
+    participate = forms.ChoiceField(widget=forms.RadioSelect,choices=PARTICIPATE_CHOICES)
+    accept = forms.ChoiceField(widget=forms.RadioSelect,choices=ACCEPT_CHOICES)
+
 """
 Model functions
 
@@ -279,10 +310,11 @@ Parse a ";" separated string into a string list
 """
 
 def parseDayRange(day_range):
-    dlist = day_range.split(';')
-    # Remove empty element
-    
-    return dlist
+    if day_range:
+        dlist = day_range.split(';')
+        return dlist
+    else:
+        return []
 
 """
 addDayRange()
@@ -337,6 +369,59 @@ def removeDayRange(day,meeting_id):
         # Update
         meeting.save()
 
+"""
+savePrefPeriod()
+
+Update dms.meeting.pref_period
+"""
+
+def savePrefPeriod(meeting_id, pref_period):
+    meeting = Meeting.objects.get(meeting_id=meeting_id)
+    meeting.pref = pref_period
+    meeting.save()
+    
+
+def getPrefPeriod(meeting_id):
+    meeting = Meeting.objects.get(meeting_id=meeting_id)
+    return meeting.pref
+
+
+def changePrefPeriod(meeting_id, action, subperiod):
+    pref_period = getPrefPeriod(meeting_id)
+    id = None;
+    # If select == True
+    # Change 0 into 1
+    if action == "cancel":
+        pref_period = pref_period | RDIGIT[subperiod]
+
+    # Change 1 into 0
+    if action == "select":
+        pref_period = pref_period & DIGIT[subperiod]
+
+    # Update or insert    
+    savePrefPeriod(meeting_id, pref_period)
+
+
+
+
+"""
+getUserCA()
+
+Get UserCA instance if it exists, else, return None
+"""
+
+def getUserCA(user_id):
+    user_ca = UserCA.objects.filter(user_id=user_id)
+    if len(user_ca) > 0:
+        return UserCA.objects.get(user_id=user_id)
+    else:
+        return None
+
+"""
+Other methods
+############
+"""
+
 
 """
 period2Time()
@@ -359,8 +444,95 @@ def period2Time(period):
                 end = counter
                 break     
         counter += 1
+        
+    if start == -1:
+        start = 0
+    if end == -1:
+        end = 16
+        
     start_time = "%02d:00"%(start+6)
     end_time = "%02d:00"%(end+6)
     time = "%s - %s"%(start_time, end_time)
     return time
+    
+"""
+combinedPeriod2Time()
+Modified from period2Time
+Convert Combined Period to time format in list
+
+"""
+def combinedPeriod2Time(period):
+    times = []
+    from agenda.views import dailyPeriod2list
+    list = dailyPeriod2list(period)
+    onelist = [1 for i in range(0,16)]
+    while True:
+        if list == onelist:
+            break
+        start = -1
+        end = -1
+        counter = 0
+        for h in list:
+            
+            if start == -1:
+                if h == 0:
+                    # Record the first appearing 0
+                    start = counter
+                    # Change this first 0 to 1 on this bit
+                    list[counter] = 1
+            else:
+                if h == 1:
+                    end = counter
+                    break
+                else:
+                    # Change following 0 to 1 on this bit
+                    list[counter] = 1
+                    
+            counter += 1
+            
+        if start == -1:
+            start = 0
+        if end == -1:
+            end = 16
+            
+        start_time = "%02d:00"%(start+6)
+        end_time = "%02d:00"%(end+6)
+        time = "%s - %s"%(start_time, end_time) 
+        times.append(time)
+        
+    return times
+
+
+"""
+formatDate()
+Convert yyyymmmdd to datetime.date() instance
+"""
+
+def formatDate(date):
+    import datetime
+    date = str(date)
+    year = int(date[:4])
+    month = int(date[4:6])
+    day = int(date[6:8])
+    
+    format_date = datetime.date(year,month,day)
+    return format_date
+
+
+"""
+formatDateList()
+Convert list of yyyymmmdd to datetime.date() instance list
+"""    
+def formatDateList(date_list):
+    if len(date_list)>0:
+        format_date_list = []
+        for date in date_list:
+            format_date = formatDate(date)
+            format_date_list.append(format_date)
+        return format_date_list
+    else:
+        return date_list
+    
+    
+    
     

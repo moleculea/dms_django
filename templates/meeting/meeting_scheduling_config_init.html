@@ -1,0 +1,90 @@
+{% extends "meeting/meeting_scheduling_base.html" %}
+{% load url from future %}
+{% block title %}Meeting scheduling configuration - DMS{% endblock %}
+
+{% block content %}
+{% block subject %}
+    <h3>Final step: specify other Initial Parameters</h3>
+{% endblock %}
+<form method="post" action="" > {% csrf_token %}
+<table class="dmstable" style="width:100%">
+<tr>
+<th>Topic</th> 
+<th>Length</th> 
+<th>Location</th> 
+<th>Search Bias</th> 
+<th>Delimit</th> 
+<th>Confirmation</th>
+</tr>
+<tr>
+<td>
+{{meeting_form.topic}}
+</td>
+<td>
+{{meeting_form.length}}
+</td>
+<td>
+{{meeting_form.location}}
+</td>
+<td>
+{{meeting_form.search_bias}}
+</td>
+<td>
+{{meeting_form.delimit}}
+</td>
+<td>
+{{meeting_form.conf_method}}
+</td>
+</tr>
+</table>
+
+<table class="dmstable">
+<tr>
+<th nowrap="nowrap">Day Range <a href="/meeting/msa/config/" style="font-weight:normal">[Config]</a></th>
+<td>
+    {% for format_date in format_selected_day %}
+    {% if forloop.last %}
+    {{format_date|date:"Y/m/d"}}
+    {% else %}
+    {{format_date|date:"Y/m/d"}}, 
+    {% endif %}
+    {% endfor %}
+</td>
+</tr>
+<tr>
+<th nowrap="nowrap">Preference Period <a href="/meeting/msa/config/pref/" style="font-weight:normal">[Config]</a></th>
+<td>
+    {% for pref_period in pref_period_list %}
+    {% if forloop.last %}
+    {{pref_period}}
+    {% else %}
+    {{pref_period}}, 
+    {% endif %}
+    {% endfor %}
+</td>
+</tr>
+<tr>
+<th nowrap="nowrap">Invitees <a href="/meeting/msa/invitee/" style="font-weight:normal">[Config]</a></th>
+<td>
+    {% for invitee in user_invitee %}
+    {% if forloop.last %}
+    <a href="/user/?id={{invitee.invitee_id.user_id.id}}">{{invitee.invitee_id.user_name}}</a>
+    {% else %}
+     <a href="/user/?id={{invitee.invitee_id.user_id.id}}">{{invitee.invitee_id.user_name}}</a>, 
+    {% endif %}
+    {% endfor %}
+</td>
+</tr>
+</table>
+<div class="help_text">
+<input type="button" value="Back" onClick="javascript:window.history.back();">
+<input name="action" type="submit" value="Save" >
+<input name="action" type="submit" value="Start" style="width:80px">
+</form>
+</div>
+<div class="help_text">
+Specify Initial Parameters for meeting scheduling as indicated in the form above.<br/>
+To start scheduling, click "Start" button.<br/>
+To save the configuration but not to start this time, click "Save" button.
+</div>
+{% endblock %}

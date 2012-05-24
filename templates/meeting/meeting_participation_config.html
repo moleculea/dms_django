@@ -1,0 +1,35 @@
+{% extends "meeting/meeting_participation_base.html" %}
+{% load url from future %}
+{% block title %}Meeting participation configuration- DMS{% endblock %}
+
+{% block content %}
+{% block subject %}
+    <h3>Configure participation</h3>
+{% endblock %}
+<table class="dmstable">
+<caption><b>
+Basic information
+</b></caption>
+<tr>
+<th>
+Participate in meeting scheduling?
+</th>
+<td>
+<label for="id_participate_0"><input checked="checked" type="radio" id="id_participate_0" value="1" name="participate" /> Yes</label> 
+<label for="id_participate_1"><input type="radio" id="id_participate_1" value="0" name="participate" /> No</label>
+</td>
+</tr>
+
+<tr>
+<th>
+Default response to invitations
+</th>
+<td>
+<label for="id_accept_0"><input checked="checked" type="radio" id="id_accept_0" value="True" name="accept" /> Accept</label> 
+<label for="id_accept_1"><input type="radio" id="id_accept_1" value="False" name="accept" /> Decline</label> 
+<label for="id_accept_2"><input  type="radio" id="id_accept_2" value="Null" name="accept" /> Silent</label>
+</td>
+</tr>
+</table>
+
+{% endblock %}

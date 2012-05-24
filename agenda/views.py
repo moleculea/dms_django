@@ -13,8 +13,9 @@ from user.models import getUserConfig
 from django.contrib.auth.decorators import login_required
 
 # Paginator
-from meeting.views import pagination_creator
+from dms.public import pagination_creator
 
+from dms.public import dailyPeriod2list
 
 """
 index()
@@ -364,18 +365,7 @@ def nextMonth(date):
     next = date + relativedelta( months = +1 )
     return next
 
-"""
-dailyPeriod2list()
-Convert a daily period (integer) into a 16-element list, each representing a status with 0 or 1
-"""
-def dailyPeriod2list(daily_period):
-    bstring = bin(daily_period)
-    string = bstring[2:]
-    
-    # Make sure the string is 16-digit, padding with 0
-    string = string.zfill(16)
-    list = [int(i) for i in string]
-    return list
+
 
 """
 dailyPeriodEvent()

@@ -4,9 +4,15 @@
 
 {% block content %}
 {% block subject %}
-    <h3>Meeting scheduling configuration</h3>
+    <h3>First step: select Day Range</h3>
 {% endblock %}
-{{selected_day}}
+
+{% if day_range_message %}
+<div class="help_text">
+{{day_range_message}}
+</div>
+{% endif %}
+
 <div class="agenda_month">
 <a href="?month={{prev|date:"Ym"}}" class="prev_month">Prev</a>
 <span class="year_top">{{date|date:"F, Y"}}</span >
@@ -15,10 +21,33 @@
 {{htmltb}}
 {% endautoescape%}
 </div>
+<div class="help_text" >
+<div class="lengend_box" style="background-color:#C0C0C0"></div> Today<br/>
+<div class="lengend_box" style="background-color:#F0E68C"></div> Weekend<br/>
+<div class="lengend_box" style="background-color:#B0C4DE"></div> Day Range
+</div>
+{% if format_selected_day %}
+<div class="help_text">
+Days selected: 
+<span class="dynamic_content">
+    {% for format_date in format_selected_day %}
+    {% if forloop.last %}
+    {{format_date|date:"Y/m/d"}}.
+    {% else %}
+    {{format_date|date:"Y/m/d"}}, 
+    {% endif %}
+    {% endfor %}
+</span>
+</div>
+{% endif %}
 <div class="help_text">
 <input type="button" value="Next" onClick="javascript:location.href = '/meeting/msa/config/pref/';">
 </div>
+
 <div class="help_text">
 Select days within which the meeting may be held and click "Next" button.
+
 </div>
+
+
 {% endblock %}

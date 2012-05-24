@@ -27,8 +27,17 @@ urlpatterns = patterns('meeting.views',
     # Scheduling config (First step: day range)
     url(r'^msa/config/$','scheduling_config'),    
     
+    # Scheduling config (Second step: preference period)
+    url(r'^msa/config/pref/$','scheduling_config_pref'),  
+    
+    # Scheduling config (Final step: other initial parameters)
+    url(r'^msa/config/init/$','scheduling_config_init'),  
+    
     # Participation (CA Index)
     url(r'^ca/$','participation_index'),
+    
+    # Participation config
+    url(r'^ca/config/$','participation_config'),
     
     
 )

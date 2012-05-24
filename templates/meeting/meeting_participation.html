@@ -6,5 +6,56 @@
 {% block subject %}
     <h2>Meeting participation</h2>
 {% endblock %}
+<table class="dmstable">
+<caption><b>
+Basic information
+</b></caption>
+
+<tr>
+<th>
+CA state
+</th>
+<td>
+{%if user_ca %}
+    {%if user_ca.active == "True" %}
+    <span style="color:#228B22">Active</span>
+    {%elif user_ca.accept == "False" %}
+    <span style="color:#B22222">Inactive</span>
+    {% endif%}
+{%else%}
+None
+{% endif%}
+<a href="/meeting/ca/config">[Config]</a>
+</td>
+</tr>
+
+<tr>
+<th>
+Default response to invitation
+</th>
+<td>
+{%if user_ca %}
+    {%if user_ca.accept == "True" %}
+    <span style="color:#228B22">Accept</span>
+    {%elif user_ca.accept == "False" %}
+    <span style="color:#B22222">Decline</span>
+    {% else %}
+    <span style="color:#DAA520">Silent</span>
+    {% endif%}
+{%else%}
+Not configured
+{% endif%}
+<a href="/meeting/ca/config">[Config]</a>
+</td>
+</tr>
+</table>
+
+<table class="dmstable">
+<caption><b>
+Invitations
+</b></caption>
+
+</table>
+
 
 {% endblock %}

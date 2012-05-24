@@ -13,8 +13,11 @@ from django.contrib.auth.decorators import login_required
 from meeting.models import *
 from user.models import getUserInviteeIDList,saveUserInvitee,getUserInvitee,updateInviteeStatus,deleteUserInvitee
 
-# Pagination
-from django.core.paginator import Paginator
+# Paginator
+from dms.public import pagination_creator
+
+from dms.public import dailyPeriod2list
+
 
 """
 index()
@@ -81,11 +84,39 @@ participation_index()
 # url: /meeting/ca/
 """ 
 def participation_index(request):
+    
     username = request.user.username
-    context = {'username':username}
+    user_id = request.user.id
+    
+    user_ca = getUserCA(user_id)
+    context = {'username':username,'user_ca':user_ca}
 
     return render_to_response('meeting/meeting_participation.html',context,context_instance=RequestContext(request))
   
+
+
+
+"""
+participation_config()
+# url: /meeting/ca/
+""" 
+def participation_config(request):
+    
+    username = request.user.username
+    
+    #config_form = ParticipationConfigForm()
+    context = {'username':username,}
+
+    return render_to_response('meeting/meeting_participation_config.html',context,context_instance=RequestContext(request))
+  
+  
+
+
+
+
+
+
+
   
 """
 scheduling_invitee()
@@ -164,7 +195,7 @@ def scheduling_config(request):
     year = datetime.date.today().year
     month = datetime.date.today().month
     year_month = None
-    
+    day_range_message = None
     
     if request.GET:
         # Get date from GET (?month=)
@@ -198,7 +229,13 @@ def scheduling_config(request):
             # remove is day (string)
             removeDayRange(remove,meeting_id)
             return redirect_back(request,'month')
-
+        
+        # Day range message
+        day_range_message = request.GET.get('day_range', None)
+        if day_range_message == "0":
+            day_range_message = "Please select at least one day."
+        else:
+            day_range_message = None
     # Requested date
     date = datetime.date(year,month,1)
     monthsdays = agenda.monthdays2calendar(year,month)
@@ -212,7 +249,10 @@ def scheduling_config(request):
         meeting = getUnfinishedConfig(user_id)
         # Get the selected day
         selected_day = parseDayRange(meeting.day_range)
-
+        
+    # Format selected days into datetime.date instance
+    format_selected_day = formatDateList(selected_day)
+    
     # Generate month table
     htmltb = ""
     htmltb += "<table class=\"agendatable\"><tr>\n"
@@ -263,34 +303,121 @@ def scheduling_config(request):
     htmltb += "</table>\n"    
     
     
-    context = {'username':username,'request':request,'htmltb':htmltb,'date':date,'prev':prev,'next':next}
+    context = {'username':username,'request':request,'htmltb':htmltb,'date':date,'prev':prev,'next':next,'day_range_message':day_range_message,'format_selected_day':format_selected_day}
     return render_to_response('meeting/meeting_scheduling_config.html',context,context_instance=RequestContext(request))
 
-"""
-View functions
-"""
-"""
-pagination_creator()
-Create Paginator instance with given request, data instance (e.g. QuerySet instance) and number of objects per page
 
-Return the data instance
+
 
 """
+scheduling_config_pref()
+# url: /meeting/msa/config/pref/
 
-def pagination_creator(request, instance, num_per_page):
-    paginator = Paginator(instance, num_per_page)
+Second step of meeting config: Preference Period
+
+""" 
+def scheduling_config_pref(request):
     
-    if request.GET:
-        page = request.GET.get('page',1)
+    username = request.user.username
+    user_id = request.user.id 
+    meeting_id = 0
+    pref_period = 0
+    
+    # Avoid direct get to the page
+    if getUnfinishedConfig(user_id):
+        
+        meeting = getUnfinishedConfig(user_id)
+        if meeting.day_range:
+            
+            meeting_id = meeting.meeting_id
+            
+        else:
+            # Redirect back
+            return HttpResponseRedirect('/meeting/msa/config/?day_range=0')  
     else:
-        page = 1
+        # Redirect back
+        return HttpResponseRedirect('/meeting/msa/config/')
+    
+    # Update pref_period
+   
+    if request.GET:
+        subperiod = request.GET.get('select', None)
+        if subperiod:
+            subperiod = int(subperiod)
+            changePrefPeriod(meeting_id, 'select', subperiod)
+        
+        subperiod = request.GET.get('cancel', None)
+        if subperiod:
+            subperiod = int(subperiod)
+            changePrefPeriod(meeting_id, 'cancel', subperiod)  
+    
+    # Reload meeting instance      
+    meeting = getUnfinishedConfig(user_id)
+    pref_period = meeting.pref   
+    
+    pref_period = dailyPeriod2list(pref_period)
+    time = [str(i).zfill(2) for i in range(6,23)]
+    context = {'username':username,'pref_period':pref_period,'time':time}
+    return render_to_response('meeting/meeting_scheduling_config_pref.html',context,context_instance=RequestContext(request))
 
-    instance = paginator.page(page)
-    #except PageNotAnInteger:
-        #instance = paginator.page(1)
-    #except EmptyPage:
-        #instance = paginator.page(paginator.num_pages)         
-    return instance
+
+"""
+scheduling_config_init()
+# url: /meeting/msa/config/init/
+
+Final step of meeting config: (Other) Initial parameters
+
+""" 
+def scheduling_config_init(request):
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == "Start":
+            # Save the config and start scheduling
+            # When saving, force meeting.length to 0 to indicate unfinished config
+            pass
+            
+        elif action == "Save":
+            
+            pass
+    else:
+    
+        username = request.user.username
+        user_id = request.user.id 
+        
+        # Avoid direct get to the page
+        if getUnfinishedConfig(user_id):
+            meeting = getUnfinishedConfig(user_id)
+            if meeting.day_range:
+                meeting_id = meeting.meeting_id
+            else:
+                # Redirect back
+                return HttpResponseRedirect('/meeting/msa/config/?day_range=0')  
+        else:
+            # Redirect back
+            return HttpResponseRedirect('/meeting/msa/config/')
+        
+        # Get meeting instance 
+        meeting = getUnfinishedConfig(user_id)
+        # if meeting.search_bias is not empty, this means the user saved the config before
+        # Thus, render the instance
+        if meeting.search_bias:
+            meeting_form = MeetingForm(instance=meeting)
+            
+        else:   
+            meeting_form = MeetingForm(instance=meeting,initial={'search_bias': 'AVERAGE_IDLE','delimit':5})
+            
+        selected_day = parseDayRange(meeting.day_range)
+        format_selected_day = formatDateList(selected_day)
+        
+        pref_period = meeting.pref
+        pref_period_list = combinedPeriod2Time(pref_period)
+        
+        user_invitee = getUserInvitee(user_id)
+        
+        context = {'username':username,'meeting_form':meeting_form,'format_selected_day':format_selected_day,'pref_period_list':pref_period_list,'user_invitee':user_invitee}
+        return render_to_response('meeting/meeting_scheduling_config_init.html',context,context_instance=RequestContext(request))
+
 
 """
 redirect_back()
