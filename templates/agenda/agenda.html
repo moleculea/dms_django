@@ -6,6 +6,10 @@
 {% block subject %}
 	<h2>Agenda</h2>
 {% endblock %}
+{%with agenda as data %}
+{%include "t_pagination.html" %}
+{% endwith %}
+
 <div class="agenda_month">
 <table class="agendatable">
 <tr>

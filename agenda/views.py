@@ -12,6 +12,10 @@ from user.models import getUserConfig
 # login_required decorator
 from django.contrib.auth.decorators import login_required
 
+# Paginator
+from meeting.views import pagination_creator
+
+
 """
 index()
 # url: /agenda/
@@ -22,7 +26,7 @@ def index(request):
     user_id = request.user.id
     username = request.user.username
     agenda = UserAgenda.objects.filter(user_id=user_id).order_by('date')
-    
+    agenda = pagination_creator(request, agenda, 10)
     context = {'agenda':agenda,'username':username}
     return render_to_response('agenda/agenda.html',context,context_instance=RequestContext(request))
 

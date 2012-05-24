@@ -314,6 +314,17 @@ table.agendatable a {
 	color: #FFF;
 }
 
+.agenda_invalid{
+	color:#aaa;
+    text-align:center;
+    display:inline-block;
+    padding:4px 0;
+    width:50px;
+    background-color: #F1F1F1;
+}
+
+
+
 .agenda_weekend{
 	text-align:center;
 	display:inline-block;
@@ -353,6 +364,11 @@ a.year_top {
 	font-weight:bold;
 }
 
+.year_top {
+    color: #696969;
+    font-size:130%;
+    font-weight:bold;
+}
 
 .agenda_period{
 	text-align:center;

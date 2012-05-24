@@ -67,21 +67,43 @@ class Meeting(models.Model):
     host_id = models.ForeignKey('user.UserSPADE',db_column='host_id',related_name='+')
     
     # Initial parameters
-    length = models.IntegerField()
+    LENGTH_CHOICES = (
+        (1,'1 hour'),
+        (2,'2 hours'),
+        (3,'3 hours'),
+        (4,'4 hours'), 
+        (5,'5 hours'),  
+    )
+    
+    length = models.IntegerField(choices=LENGTH_CHOICES)
     day_range = models.CharField(max_length=1500)
     pref = models.IntegerField()
     topic = models.CharField(max_length=1500)
-    location = models.CharField(max_length=1500)
-    search_bias = models.CharField(max_length=60)
-    delimit = models.IntegerField(null=True)
-    conf_method = models.CharField(max_length=60)
+    location = models.CharField(max_length=1500,blank=True)
+    
+    SEARCH_BIAS_CHOICES = (
+        ('AVERAGE_IDLE','Average idleness'),
+        ('DAY_LENGTH','Day length'),
+    )    
+    search_bias = models.CharField(max_length=60,choices=SEARCH_BIAS_CHOICES,blank=True)
+    
+    DELIMIT_CHOICES = (
+        (1,'1'), (2,'2'), (3,'3'), (4,'4'), (5,'5'), (6,'6'), (7,'7'), (8,'8'),
+    )    
+    delimit = models.IntegerField(null=True,choices=DELIMIT_CHOICES,blank=True)
+    
+    CONF_METHOD_CHOICES = (
+        ('AUTO','Automatic'),
+        ('PROMPT','Ask me'),
+    )        
+    conf_method = models.CharField(max_length=60,choices=CONF_METHOD_CHOICES,blank=True)
     
     # Functional columns
-    conf_period = models.CharField(max_length=60) # True | False | NULL | Period
-    choose_period = models.CharField(max_length=1500)
-    invite = models.CharField(max_length=60) # True | False | NULL
-    cancel = models.CharField(max_length=15) # True | False | NULL
-    reschedule = models.CharField(max_length=15) # True | NULL
+    conf_period = models.CharField(max_length=60,blank=True) # True | False | NULL | Period
+    choose_period = models.CharField(max_length=1500,blank=True)
+    invite = models.CharField(max_length=60,blank=True) # True | False | NULL
+    cancel = models.CharField(max_length=15,blank=True) # True | False | NULL
+    reschedule = models.CharField(max_length=15,blank=True) # True | NULL
     stat_id = models.ForeignKey('MeetingStat',db_column="stat_id",related_name='+', null=True)
     
     class Meta:
@@ -224,6 +246,96 @@ def getMeetingCanceledList():
     meeting_canceled = MeetingCanceled.objects.all()
     return meeting_canceled
 
+
+"""
+getUnfinishedConfig()
+
+Get the unfinished meeting config (not yet submitted meeting, with only day range or preference period )
+
+Check whether meeting length (dms.meeting.length) is zero to identify an unfinished config
+
+Only ONE unfinished config is allowed to exist in dms.meeting
+
+"""
+
+def getUnfinishedConfig(user_id):
+    # Check whether unfinished config exists
+    check = Meeting.objects.filter(host_id=user_id,length=0)
+    
+    if len(check) > 0:
+        meeting = Meeting.objects.get(host_id=user_id,length=0)
+        
+        # Return the meeting instance for update use
+        return meeting
+    # If not exist, return None which indicates insert use
+    else:
+        return None
+    
+"""
+parseDayRange()
+Parse a ";" separated string into a string list
+"20120601;20120602;" => ['20120601','20120602']
+
+"""
+
+def parseDayRange(day_range):
+    dlist = day_range.split(';')
+    # Remove empty element
+    
+    return dlist
+
+"""
+addDayRange()
+Add a day to day range
+meeting_id = None: no unfinished meeting config, new config and add day to empty day range
+"""    
+
+def addDayRange(day,user_id,meeting_id=None):
+    # day is a string
+    # Unfinished config exists
+    if meeting_id:
+        meeting = Meeting.objects.get(meeting_id=meeting_id)
+        # If meeting_id exists, get and parse the day first 
+        day_range = parseDayRange(meeting.day_range)
+        # Append the day
+        day_range.append(day)
+        # Join list to string
+        day_range= ";".join(day_range)
+        meeting.day_range = day_range
+        # Update
+        meeting.save()
+    else:
+        # Add this single, first day to day range
+        # Other fields uses default values
+        
+        ##############################################
+        
+        # First time to insert default meeting values
+        user = User.objects.get(id=user_id)
+        user_spade = UserSPADE.objects.get(user_id=user)
+        meeting = Meeting(host_id=user_spade, length=0, day_range=day, pref=0, topic="No topic")
+        # Insert
+        meeting.save()
+
+"""
+removeDayRange()
+Remove a day from day range
+"""    
+    
+def removeDayRange(day,meeting_id):
+    
+    meeting = Meeting.objects.get(meeting_id=meeting_id)
+    # Get and parse day range
+    day_range = parseDayRange(meeting.day_range)
+    
+    if day in day_range:
+        # Remove the day
+        day_range.remove(day)
+        # Join the list into string
+        day_range= ";".join(day_range)
+        meeting.day_range = day_range
+        # Update
+        meeting.save()
 
 
 """

@@ -1,0 +1,24 @@
+{% extends "meeting/meeting_scheduling_base.html" %}
+{% load url from future %}
+{% block title %}Meeting scheduling configuration - DMS{% endblock %}
+
+{% block content %}
+{% block subject %}
+    <h3>Meeting scheduling configuration</h3>
+{% endblock %}
+{{selected_day}}
+<div class="agenda_month">
+<a href="?month={{prev|date:"Ym"}}" class="prev_month">Prev</a>
+<span class="year_top">{{date|date:"F, Y"}}</span >
+<a href="?month={{next|date:"Ym"}}" class="next_month">Next</a>
+{% autoescape off %}
+{{htmltb}}
+{% endautoescape%}
+</div>
+<div class="help_text">
+<input type="button" value="Next" onClick="javascript:location.href = '/meeting/msa/config/pref/';">
+</div>
+<div class="help_text">
+Select days within which the meeting may be held and click "Next" button.
+</div>
+{% endblock %}

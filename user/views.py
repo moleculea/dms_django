@@ -9,7 +9,7 @@ from django.template.loader import get_template
 
 # Models
 from django.contrib.auth.models import User
-from user.models import UserSPADE, UserConfig
+from user.models import UserSPADE, UserConfig, getUserInvitee
 from agenda.models import getUserConfig
 
 
@@ -72,6 +72,7 @@ def index(request, id=None):
     username = data.username
     joined = data.date_joined
     group = data.is_superuser
+
     
     if group:
         group = "Administrator"
@@ -81,6 +82,8 @@ def index(request, id=None):
         
     schedule = 0
     invite = 0
+    
+    
     context = {'username':username,'id':id,'joined':joined,'group':group,'query':query,'schedule':schedule,'invite':invite}
     return render_to_response('user/user.html',context,context_instance=RequestContext(request))
 
@@ -124,10 +127,13 @@ def config(request):
     username = request.user.username
     id = request.user.id
     user_config = getUserConfig(user_id=id)
+    user_invitee = getUserInvitee(host_id=id)
+    
     pref_period = None
     best_period = None
     msa = None
     ca = None
+    
     
     if user_config.pref_period and user_config.pref_period != 65535:
         pref_period= user_config.pref_period
@@ -142,7 +148,7 @@ def config(request):
         ca = user_config.ca_id  
     agenda = {'pref':pref_period,'best':best_period}
     
-    c = RequestContext(request, {'msa': msa,'ca': ca,'agenda':agenda,'username':username})
+    c = RequestContext(request, {'msa': msa,'ca': ca,'agenda':agenda,'username':username,'user_invitee':user_invitee})
     t = get_template('user/user_config.html')
     return HttpResponse(t.render(c))
 

@@ -12,7 +12,7 @@
 	Scheduling
 	</td>
 	<td>
-	{{ msa }} <a href="/meeting/msa/config">[Config]</a>
+	{{ msa }} <a href="/meeting/msa/config/">[Config]</a>
 	</td>
 </tr>
 
@@ -21,10 +21,22 @@
 	Participation
 	</td>
 	<td>
-	{{ ca }} <a href="/meeting/ca/config">[Config]</a>
+	{{ ca }} <a href="/meeting/ca/config/">[Config]</a>
 	</td>
 </tr>
-
+<tr>
+    <td>
+    Invitee
+    </td>
+    <td>
+    {% if user_invitee %} 
+    Configured
+    {% else %}
+    Not configured
+    {% endif %}
+    <a href="/meeting/msa/invitee/">[Config]</a>
+    </td>
+</tr>
 <tr>
 	<td>
 	Perferred Period

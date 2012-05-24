@@ -21,11 +21,11 @@ urlpatterns = patterns('meeting.views',
     # Scheduling invitee
     url(r'^msa/invitee/$','scheduling_invitee'),   
      
-    # Scheduling invitee config (add or remove invitee from user list)
-    url(r'^msa/invitee/config/$','scheduling_invitee_config'),    
+    # Scheduling invitee add (add invitee from user list)
+    url(r'^msa/invitee/add/$','scheduling_invitee_add'),    
 
-    # Scheduling invitee config (add or remove invitee from user list)
-    #url(r'^msa/invitee/config/\?add=\d+/$','scheduling_invitee_config'),   
+    # Scheduling config (First step: day range)
+    url(r'^msa/config/$','scheduling_config'),    
     
     # Participation (CA Index)
     url(r'^ca/$','participation_index'),

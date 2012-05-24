@@ -4,7 +4,7 @@
 
 {% block content %}
 {% block subject %}
-    <h3>Meeting scheduling invitees</h3>
+    <h3>Invitee list</h3>
 {% endblock %}
 {%with user_list as data %}
 {%include "t_pagination.html" %}
@@ -27,7 +27,7 @@
 </tr>
 {% for user in user_list %}
 {% if user.invitee_status %}
-<tr style="background-color:#FFA07A">
+<tr style="background-color:#FFDAB9">
 {% else %}
 <tr>
 {% endif %}
