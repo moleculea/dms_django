@@ -12,8 +12,8 @@
   	<a class="navlink" href="/agenda/"> Agenda</a>
 	{% endif %} 
 {% endwith %}  
-{% with request.path|slice:":13" as path %}
-    {% if path|slice:":9" = '/meeting/' and path != '/meeting/ca/' and path != '/meeting/msa/' and path != '/meeting/ca/'%}
+{% with request.path|slice:":21" as path %}
+    {% if path == '/meeting/' or path == '/meeting/success/' or path == '/meeting/canceled/'%}
     <a class="navlink_chosen" href="/meeting/">Meetings</a>
     {% else %} 
     <a class="navlink" href="/meeting/">Meetings</a>

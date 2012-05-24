@@ -25,6 +25,8 @@ CA state
 {%else%}
 None
 {% endif%}
+</td>
+<td>
 <a href="/meeting/ca/config">[Config]</a>
 </td>
 </tr>
@@ -37,7 +39,7 @@ Default response to invitation
 {%if user_ca %}
     {%if user_ca.accept == "True" %}
     <span style="color:#228B22">Accept</span>
-    {%elif user_ca.accept == "False" %}
+    {% elif user_ca.accept == "False" %}
     <span style="color:#B22222">Decline</span>
     {% else %}
     <span style="color:#DAA520">Silent</span>
@@ -45,7 +47,9 @@ Default response to invitation
 {%else%}
 Not configured
 {% endif%}
+<td>
 <a href="/meeting/ca/config">[Config]</a>
+</td>
 </td>
 </tr>
 </table>

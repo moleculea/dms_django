@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from user.models import UserSPADE, UserConfig
+from user.models import UserSPADE, UserConfig, UserInvitee
 
 from django import forms
 from django.forms import ModelForm
@@ -35,7 +35,7 @@ class UserCA(models.Model):
     ca_id = models.AutoField(primary_key=True)
     user_id = models.ForeignKey('user.UserSPADE', db_column="user_id", related_name='+')
     active = models.CharField(max_length=15) # True | False
-    accept = models.CharField(max_length=15) # True (ACCEPT) | False (DECLINE) | NULL (SILENT)
+    accept = models.CharField(max_length=15,blank=True) # True (ACCEPT) | False (DECLINE) | NULL (SILENT)
     
     class Meta:
         db_table = u'user_ca'
@@ -91,6 +91,17 @@ class Meeting(models.Model):
     class Meta:
         db_table = u'meeting'        
 
+    # Convert Preference Period into time format list
+    def preftotime(self):
+        return combinedPeriod2Time(self.pref)
+    
+    # Convert Day Range's ";" into <br/>
+    def breakdayrange(self):
+        date_list = self.day_range.split(";")
+        format_list = formatDateList(date_list)
+        return format_list
+    
+    
 """
 MeetingForm
 
@@ -127,6 +138,7 @@ class MeetingForm(ModelForm):
     class Meta:
         model = Meeting
         fields = ('topic', 'length', 'location','search_bias','delimit','conf_method')
+        
 
 
 
@@ -235,7 +247,7 @@ class ParticipationConfigForm(forms.Form):
     ACCEPT_CHOICES = (('True','Accept'),('False','Decline'),('','Silent'))
     
     participate = forms.ChoiceField(widget=forms.RadioSelect,choices=PARTICIPATE_CHOICES)
-    accept = forms.ChoiceField(widget=forms.RadioSelect,choices=ACCEPT_CHOICES)
+    accept = forms.ChoiceField(required=False,widget=forms.RadioSelect,choices=ACCEPT_CHOICES)
 
 """
 Model functions
@@ -301,6 +313,26 @@ def getUnfinishedConfig(user_id):
     # If not exist, return None which indicates insert use
     else:
         return None
+
+
+"""
+getCurrentMeeting()
+
+Get the current meeting being scheduled (right after the start of scheduling and before it is successful or canceled)
+
+"""
+
+def getCurrentMeeting(user_id):
+    
+    success = MeetingSuccess.objects.all().values('meeting_id').query
+    canceled = MeetingCanceled.objects.all().values('meeting_id').query
+    
+    # Meetings whose config has finished (length!=0) that are neither in dms.meeting_success nor dms.meeting_canceled
+    # Normally only ONE or none
+    current = Meeting.objects.exclude(meeting_id__in=success).exclude(meeting_id__in=canceled).exclude(length=0)
+    
+    return current
+    
     
 """
 parseDayRange()
@@ -416,6 +448,18 @@ def getUserCA(user_id):
         return UserCA.objects.get(user_id=user_id)
     else:
         return None
+
+
+"""
+getActiveUserInvitee()
+Get list of invitees (whose CAs are active in dms.user_ca) of a user
+"""
+def getActiveUserInvitee(user_id):
+    
+    user_ca = UserCA.objects.filter(active="True").values('user_id').query
+    active_user_invitee = UserInvitee.objects.filter(invitee_id__in=user_ca)
+    return active_user_invitee
+      
 
 """
 Other methods

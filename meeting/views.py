@@ -72,6 +72,7 @@ def meeting_success(request):
 scheduling_index()
 # url: /meeting/msa/
 """ 
+@login_required
 def scheduling_index(request):
     username = request.user.username
     context = {'username':username}
@@ -83,6 +84,7 @@ def scheduling_index(request):
 participation_index()
 # url: /meeting/ca/
 """ 
+@login_required
 def participation_index(request):
     
     username = request.user.username
@@ -100,28 +102,53 @@ def participation_index(request):
 participation_config()
 # url: /meeting/ca/
 """ 
+@login_required
 def participation_config(request):
-    
     username = request.user.username
+    user_id = request.user.id
+    if request.method == 'POST':
+        
+        form = ParticipationConfigForm(request.POST)
+        
+        if form.is_valid():
+            accept = form.cleaned_data['accept']
+            #active = form.cleaned_data['active']
+            
+            user_ca = getUserCA(user_id)
+            
+            # if user_id exists in dms.user_ca
+            if user_ca:
+                # Update
+                user_ca.accept = accept
+                #user_ca.active = active
+                user_ca.save()
+                
+            else:
+                # Insert
+                user_ca = UserCA(user_id=user_id,accept=accept,active=active)
+                user_ca.save()
+                
+        return HttpResponseRedirect("/meeting/ca/")
     
-    #config_form = ParticipationConfigForm()
-    context = {'username':username,}
+    
+    else:
 
-    return render_to_response('meeting/meeting_participation_config.html',context,context_instance=RequestContext(request))
+        #config_form = ParticipationConfigForm()
+        
+        user_ca = getUserCA(user_id)
+    
+        context = {'username':username,'user_ca':user_ca}
+    
+        return render_to_response('meeting/meeting_participation_config.html',context,context_instance=RequestContext(request))
+      
   
-  
-
-
-
-
-
-
 
   
 """
 scheduling_invitee()
 # url: /meeting/msa/invitee/
 """ 
+@login_required
 def scheduling_invitee(request):
     
     username = request.user.username
@@ -154,10 +181,12 @@ def scheduling_invitee(request):
     context = {'username':username,'user_list':user_list,'request':request}
     return render_to_response('meeting/meeting_scheduling_invitee.html',context,context_instance=RequestContext(request))
 
+
 """
 scheduling_invitee_add()
 # url: /meeting/msa/invitee/add/
 """ 
+@login_required
 def scheduling_invitee_add(request):
     
     username = request.user.username
@@ -184,6 +213,7 @@ scheduling_config()
 First step of meeting config: Day Range
 
 """ 
+@login_required
 def scheduling_config(request):
     username = request.user.username
     user_id = request.user.id
@@ -316,6 +346,7 @@ scheduling_config_pref()
 Second step of meeting config: Preference Period
 
 """ 
+@login_required
 def scheduling_config_pref(request):
     
     username = request.user.username
@@ -368,23 +399,38 @@ scheduling_config_init()
 Final step of meeting config: (Other) Initial parameters
 
 """ 
-def scheduling_config_init(request):
+@login_required
+def scheduling_config_init(request):   
+    
+    username = request.user.username
+    user_id = request.user.id 
+    
     if request.method == 'POST':
         action = request.POST.get('action')
         
         if action == "Start":
             # Save the config and start scheduling
             # When saving, force meeting.length to 0 to indicate unfinished config
-            pass
+            meeting = getUnfinishedConfig(user_id)
+            
+            form = MeetingForm(request.POST, instance=meeting)
+            form.save()
+            
             
         elif action == "Save":
+            # Temporarily save initial parameters
+            # Force save length as 0 to make it unfinished
+            meeting = getUnfinishedConfig(user_id)
             
-            pass
-    else:
-    
-        username = request.user.username
-        user_id = request.user.id 
+            form = MeetingForm(request.POST, instance=meeting)
+            modform = form.save(commit=False)
+            modform.length = 0
+            modform.save()
         
+        return HttpResponseRedirect("/meeting/msa/ms/")
+            
+    else:
+
         # Avoid direct get to the page
         if getUnfinishedConfig(user_id):
             meeting = getUnfinishedConfig(user_id)
@@ -413,10 +459,43 @@ def scheduling_config_init(request):
         pref_period = meeting.pref
         pref_period_list = combinedPeriod2Time(pref_period)
         
-        user_invitee = getUserInvitee(user_id)
+        #user_invitee = getUserInvitee(user_id)
+        user_invitee = getActiveUserInvitee(user_id)
         
         context = {'username':username,'meeting_form':meeting_form,'format_selected_day':format_selected_day,'pref_period_list':pref_period_list,'user_invitee':user_invitee}
         return render_to_response('meeting/meeting_scheduling_config_init.html',context,context_instance=RequestContext(request))
+
+
+"""
+
+scheduling_management()
+# url: /meeting/msa/ms/
+
+"""
+
+@login_required
+def scheduling_management(request):
+    
+    username = request.user.username
+    user_id = request.user.id
+    
+    unfinished_meeting = getUnfinishedConfig(user_id)
+    current_meeting = getCurrentMeeting(user_id)
+    
+    context = {'username':username,'unfinished_meeting': unfinished_meeting, 'current_meeting': current_meeting} 
+    
+    return render_to_response('meeting/meeting_scheduling_management.html',context,context_instance=RequestContext(request))
+
+
+
+@login_required
+def scheduling_log(request):
+    
+    username = request.user.username
+    user_id = request.user.id
+    
+    context = {'username':username} 
+    return render_to_response('meeting/meeting_scheduling_log.html',context,context_instance=RequestContext(request))
 
 
 """

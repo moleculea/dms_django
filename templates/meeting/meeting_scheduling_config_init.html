@@ -40,7 +40,10 @@
 
 <table class="dmstable">
 <tr>
-<th nowrap="nowrap">Day Range <a href="/meeting/msa/config/" style="font-weight:normal">[Config]</a></th>
+<th nowrap="nowrap">Day Range </th>
+<td>
+<a href="/meeting/msa/config/" style="font-weight:normal">[Config]</a>
+</td>
 <td>
     {% for format_date in format_selected_day %}
     {% if forloop.last %}
@@ -52,7 +55,10 @@
 </td>
 </tr>
 <tr>
-<th nowrap="nowrap">Preference Period <a href="/meeting/msa/config/pref/" style="font-weight:normal">[Config]</a></th>
+<th nowrap="nowrap">Preference Period </th>
+<td>
+<a href="/meeting/msa/config/pref/" style="font-weight:normal">[Config]</a>
+</td>
 <td>
     {% for pref_period in pref_period_list %}
     {% if forloop.last %}
@@ -64,7 +70,10 @@
 </td>
 </tr>
 <tr>
-<th nowrap="nowrap">Invitees <a href="/meeting/msa/invitee/" style="font-weight:normal">[Config]</a></th>
+<th nowrap="nowrap">Invitees (CA active)</th>
+<td>
+<a href="/meeting/msa/invitee/" style="font-weight:normal">[Config]</a>
+</td>
 <td>
     {% for invitee in user_invitee %}
     {% if forloop.last %}
@@ -80,10 +89,11 @@
 <input type="button" value="Back" onClick="javascript:window.history.back();">
 <input name="action" type="submit" value="Save" >
 <input name="action" type="submit" value="Start" style="width:80px">
-</form>
 </div>
+</form>
 <div class="help_text">
 Specify Initial Parameters for meeting scheduling as indicated in the form above.<br/>
+The column "Invitee (CA active)" indicates invitees whose CAs are ative, which means they agree to participate in meeting scheduling.<br/>
 To start scheduling, click "Start" button.<br/>
 To save the configuration but not to start this time, click "Save" button.
 </div>

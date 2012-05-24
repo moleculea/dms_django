@@ -33,6 +33,12 @@ urlpatterns = patterns('meeting.views',
     # Scheduling config (Final step: other initial parameters)
     url(r'^msa/config/init/$','scheduling_config_init'),  
     
+    # Scheduling Management
+    url(r'^msa/ms/$','scheduling_management'),      
+    
+    # Scheduling log
+    url(r'^msa/log/$','scheduling_log'),      
+        
     # Participation (CA Index)
     url(r'^ca/$','participation_index'),
     

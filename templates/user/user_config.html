@@ -8,58 +8,72 @@
 
 <table class="dmstable">
 <tr>
-	<td>
+	<th>
 	Scheduling
+	</th>
+	<td>
+	{{ msa }} 
 	</td>
 	<td>
-	{{ msa }} <a href="/meeting/msa/config/">[Config]</a>
+	<a href="/meeting/msa/config/">[Config]</a>
 	</td>
 </tr>
 
 <tr>
-	<td>
+	<th>
 	Participation
+	</th>
+	<td>
+	{{ ca }} 
 	</td>
 	<td>
-	{{ ca }} <a href="/meeting/ca/config/">[Config]</a>
-	</td>
+    <a href="/meeting/ca/config/">[Config]</a>
+    </td>
 </tr>
 <tr>
-    <td>
+    <th>
     Invitee
-    </td>
+    </th>
     <td>
     {% if user_invitee %} 
     Configured
     {% else %}
     Not configured
     {% endif %}
+    </td>
+    <td>
     <a href="/meeting/msa/invitee/">[Config]</a>
     </td>
 </tr>
 <tr>
-	<td>
+	<th>
 	Perferred Period
-	</td>
+	</th>
 	<td>
 	{% if agenda.pref and agenda.pref != 65535 %}
-		Configured <a href="/agenda/config">[Config]</a>
+		Configured
 	{% else %}
-		Not configured <a href="/agenda/config">[Config]</a>
+		Not configured
 	{% endif %}
 	</td>
+	<td>
+    <a href="/agenda/config">[Config]</a>
+    </td>
 </tr>
 <tr>
-	<td>
+	<th>
 	Best Period
-	</td>
+	</th>
 	<td>
 	{% if agenda.best and agenda.best != 65535 %}
-		Configured <a href="/agenda/config">[Config]</a>
+		Configured
 	{% else %}
-		Not configured <a href="/agenda/config">[Config]</a>
+		Not configured
 	{% endif %}
 	</td>
+	<td>
+    <a href="/agenda/config">[Config]</a>
+    </td>
 </tr>
 
 </table>

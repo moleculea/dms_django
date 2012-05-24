@@ -1,0 +1,99 @@
+{% extends "meeting/meeting_scheduling_base.html" %}
+{% load url from future %}
+{% block title %}Meeting scheduling management - DMS{% endblock %}
+
+{% block content %}
+{% block subject %}
+    <h3>Scheduling management</h3>
+{% endblock %}
+
+<table class="dmstable" style="width:100%">
+<caption><b>
+Unfinished meeting scheduling configuration
+</b></caption>
+{% if unfinished_meeting %}
+	<tr>
+		<th nowrap ="nowrap">Topic</th> 
+		<th nowrap ="nowrap">Location</th>
+		<th nowrap ="nowrap">Day Range</th>
+		<th nowrap ="nowrap">Pref Period</th>
+		<th nowrap ="nowrap">Search Bias</th> 
+		<th nowrap ="nowrap">Delimit</th> 
+		<th nowrap ="nowrap">Confirmation</th>
+	</tr>
+	<tr>
+	<td>
+	{{unfinished_meeting.topic}}
+	</td>
+	<td>
+	{{unfinished_meeting.location}}
+	</td>
+	<td>
+	{% for day in unfinished_meeting.breakdayrange %}
+	    {% if forloop.last %}
+	    {{day|date:"Y/m/d"}}
+	    {% else %}
+	    {{day|date:"Y/m/d"}}<br/> 
+	    {% endif %}
+	{% endfor %}
+	</td>
+	<td nowrap ="nowrap">
+	    
+	    {% for pref_period in unfinished_meeting.preftotime %}
+	    {% if forloop.last %}
+	    {{pref_period}}
+	    {% else %}
+	    {{pref_period}}<br/> 
+	    {% endif %}
+	    {% endfor %}
+	    
+	</td>
+	<td>
+	{% if unfinished_meeting.search_bias %}
+	    {% if unfinished_meeting.search_bias == "DAY_LENGTH" %}
+	    Day length
+	    {% elif unfinished_meeting.search_bias == "AVERAGE_IDLE" %}
+	    Average idleness
+	    {% endif %}
+	{% endif %}
+	</td>
+	<td>
+	{{unfinished_meeting.delimit}}
+	</td>
+	<td>
+	{% if unfinished_meeting.conf_method %}
+	    {% if unfinished_meeting.conf_method == "AUTO" %}
+	    Automatic
+	    {% elif unfinished_meeting.conf_method == "PROMPT" %}
+	    Ask me
+	    {% endif %}
+	{% endif %}
+	</td>
+	</tr>
+	
+{% else %}
+    <caption>No result</caption>
+{% endif%}
+</table>
+{% if unfinished_meeting %}
+	<div class="help_text">
+	<input type="button" value="Continue" onClick="javascript:location.href = '/meeting/msa/config/';">
+	</div>
+	<div class="help_text">
+    There is currently an unfinished meeting scheduling configuration that is either saved by you or by the system. Click "Continue" to go back to the configuration page.
+    </div>
+{% endif%}
+<table class="dmstable" style="width:100%">
+<caption><b>
+Current meeting being scheduled
+</b></caption>
+{% if current_meeting %}
+	{%for current in current_meeting %}
+	{{current.topic}}
+	{% endfor %}
+{% else %}
+    <caption>No result</caption>
+{% endif %}
+</table>
+
+{% endblock %}

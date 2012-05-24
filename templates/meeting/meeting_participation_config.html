@@ -6,17 +6,20 @@
 {% block subject %}
     <h3>Configure participation</h3>
 {% endblock %}
+<form method="post" action="">{% csrf_token %}
 <table class="dmstable">
-<caption><b>
-Basic information
-</b></caption>
 <tr>
 <th>
 Participate in meeting scheduling?
 </th>
 <td>
-<label for="id_participate_0"><input checked="checked" type="radio" id="id_participate_0" value="1" name="participate" /> Yes</label> 
+{% if user_ca %}
+<label for="id_participate_0"><input {% if user_ca.active == "True" %}checked="checked"{% endif %} type="radio" id="id_participate_0" value="1" name="participate" /> Yes</label> 
 <label for="id_participate_1"><input type="radio" id="id_participate_1" value="0" name="participate" /> No</label>
+{% else %}
+<label for="id_participate_0"><input {% if user_ca.active == "False" %}checked="checked"{% endif %} type="radio" id="id_participate_0" value="1" name="participate" /> Yes</label> 
+<label for="id_participate_1"><input type="radio" id="id_participate_1" value="0" name="participate" /> No</label>
+{% endif %}
 </td>
 </tr>
 
@@ -25,11 +28,22 @@ Participate in meeting scheduling?
 Default response to invitations
 </th>
 <td>
+{% if user_ca %}
+<label for="id_accept_0"><input {% if user_ca.accept == "True" %}checked="checked"{% endif %} type="radio" id="id_accept_0" value="True" name="accept" /> Accept</label> 
+<label for="id_accept_1"><input {% if user_ca.accept == "False" %}checked="checked"{% endif %} type="radio" id="id_accept_1" value="False" name="accept" /> Decline</label> 
+<label for="id_accept_2"><input {% if not user_ca.accept %}checked="checked"{% endif %}type="radio" id="id_accept_2" value="" name="accept" /> Silent</label>
+{% else %}
 <label for="id_accept_0"><input checked="checked" type="radio" id="id_accept_0" value="True" name="accept" /> Accept</label> 
 <label for="id_accept_1"><input type="radio" id="id_accept_1" value="False" name="accept" /> Decline</label> 
 <label for="id_accept_2"><input  type="radio" id="id_accept_2" value="Null" name="accept" /> Silent</label>
+{% endif %}
 </td>
 </tr>
 </table>
-
+<input type="submit" name="submit" value="Submit">
+</form>
+<div class="help_text">
+Upon submission, corresponding agent actions will take place.<br/>
+If you choose "Yes" for "participate in meeting scheduling", ALCC will start a Common Agent (CA) for you.
+</div>
 {% endblock %}
