@@ -353,6 +353,7 @@ def scheduling_config_pref(request):
     user_id = request.user.id 
     meeting_id = 0
     pref_period = 0
+    pref_message = None
     
     # Avoid direct get to the page
     if getUnfinishedConfig(user_id):
@@ -367,7 +368,7 @@ def scheduling_config_pref(request):
             return HttpResponseRedirect('/meeting/msa/config/?day_range=0')  
     else:
         # Redirect back
-        return HttpResponseRedirect('/meeting/msa/config/')
+        return HttpResponseRedirect('/meeting/msa/config/?day_range=0')
     
     # Update pref_period
    
@@ -382,13 +383,20 @@ def scheduling_config_pref(request):
             subperiod = int(subperiod)
             changePrefPeriod(meeting_id, 'cancel', subperiod)  
     
+        # Preference Period message
+        pref_message = request.GET.get('pref', None)
+        if pref_message == "0":
+            pref_message = "Please select at least one hour."
+        else:
+            pref_message = None
+    
     # Reload meeting instance      
     meeting = getUnfinishedConfig(user_id)
     pref_period = meeting.pref   
     
     pref_period = dailyPeriod2list(pref_period)
     time = [str(i).zfill(2) for i in range(6,23)]
-    context = {'username':username,'pref_period':pref_period,'time':time}
+    context = {'username':username,'pref_period':pref_period,'time':time,'pref_message':pref_message}
     return render_to_response('meeting/meeting_scheduling_config_pref.html',context,context_instance=RequestContext(request))
 
 
@@ -411,11 +419,19 @@ def scheduling_config_init(request):
         if action == "Start":
             # Save the config and start scheduling
             # When saving, force meeting.length to 0 to indicate unfinished config
+            # Get the meeting (meeting_id) that is submitted
             meeting = getUnfinishedConfig(user_id)
+            meeting_id = meeting.meeting_id
             
+            # Save the initial parameters as it was
             form = MeetingForm(request.POST, instance=meeting)
             form.save()
             
+            # Add all active invitees( of the host, i.e. this user )
+            # to dms.user_invitee_meeting
+            addAllUIM(user_id, meeting_id)
+            
+            return HttpResponseRedirect("/meeting/msa/ms/?id=%s"%meeting_id)
             
         elif action == "Save":
             # Temporarily save initial parameters
@@ -427,7 +443,7 @@ def scheduling_config_init(request):
             modform.length = 0
             modform.save()
         
-        return HttpResponseRedirect("/meeting/msa/ms/")
+            return HttpResponseRedirect("/meeting/msa/ms/")
             
     else:
 
@@ -459,6 +475,10 @@ def scheduling_config_init(request):
         pref_period = meeting.pref
         pref_period_list = combinedPeriod2Time(pref_period)
         
+        if not pref_period_list:
+            # Redirect back
+            return HttpResponseRedirect('/meeting/msa/config/pref/?pref=0')     
+        
         #user_invitee = getUserInvitee(user_id)
         user_invitee = getActiveUserInvitee(user_id)
         
@@ -470,21 +490,67 @@ def scheduling_config_init(request):
 
 scheduling_management()
 # url: /meeting/msa/ms/
-
+# url: /meeting/msa/ms/?id=MEETING_ID
 """
 
 @login_required
 def scheduling_management(request):
-    
     username = request.user.username
-    user_id = request.user.id
+    user_id = request.user.id 
     
-    unfinished_meeting = getUnfinishedConfig(user_id)
-    current_meeting = getCurrentMeeting(user_id)
+    meeting_id = None
+    meeting_id = request.GET.get('id',None)
     
-    context = {'username':username,'unfinished_meeting': unfinished_meeting, 'current_meeting': current_meeting} 
-    
-    return render_to_response('meeting/meeting_scheduling_management.html',context,context_instance=RequestContext(request))
+
+    # If meeting_id is passed from GET (?id=MEETING_ID)    
+    # Render the management interface for this meeting 
+    # This interface is able manage or view any meeting in dms.meeting
+    if meeting_id:
+
+        ### GET actions ###
+        # Update conf_period with the chosen period
+        choose = request.GET.get('choose', None)
+        if choose != None:
+            updateConfPeriod(meeting_id, choose)
+            return HttpResponseRedirect('/meeting/msa/ms/?id=%s'%meeting_id)    
+
+        ### Initialize variables for stage actions ###
+        stage = 0
+        choose_period = None
+        
+        ### Stage actions ###
+        stage = getStage(meeting_id)
+        if stage == 1:
+            choose_period = getChoosePeriod(meeting_id)
+        
+        ### Load meeting and invitee instance ###
+        # Get static things (initial parameters, other status, invitees) and display
+        # Get the meeting
+        meeting = Meeting.objects.get(meeting_id=meeting_id)
+        
+        # Get invitees of this meeting
+        # If this is an unfinised meeting config, 
+        # uim_invitee is an empty list
+        uim_invitee = getUIMInvitee(meeting_id)
+        
+        
+        context = {'username':username,'request':request,'meeting': meeting,'uim_invitee': uim_invitee,'stage':stage,'choose_period':choose_period} 
+        
+        return render_to_response('meeting/meeting_scheduling_management.html',context,context_instance=RequestContext(request))
+        
+    # If meeting_id is not given in GET
+    # Render the general management interface
+    else:
+        # Render unfinished meeting config if exists
+        unfinished_meeting = getUnfinishedConfig(user_id)
+        
+        # Render the current meeting being scheduled
+        # before the meeting succeeded or is canceled
+        current_meeting = getCurrentMeeting(user_id)
+        
+        context = {'username':username,'unfinished_meeting': unfinished_meeting, 'current_meeting': current_meeting} 
+        
+        return render_to_response('meeting/meeting_scheduling_management.html',context,context_instance=RequestContext(request))
 
 
 

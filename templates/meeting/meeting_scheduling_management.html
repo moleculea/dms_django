@@ -3,10 +3,170 @@
 {% block title %}Meeting scheduling management - DMS{% endblock %}
 
 {% block content %}
-{% block subject %}
-    <h3>Scheduling management</h3>
-{% endblock %}
 
+{% if meeting %}
+    <h3>Management for "{{meeting.topic}}"</h3>
+{% comment %} Specific management interface{% endcomment %}
+<table class="dmstable" style="width:100%">
+<caption>
+<b>Initial Parameters</b>
+</caption>
+    <tr>
+        <th nowrap ="nowrap">ID</th> 
+        <th nowrap ="nowrap">Topic</th> 
+        <th nowrap ="nowrap">Location</th>
+        <th nowrap ="nowrap">Day Range</th>
+        <th nowrap ="nowrap">Pref Period</th>
+        <th nowrap ="nowrap">Search Bias</th> 
+        <th nowrap ="nowrap">Delimit</th> 
+        <th nowrap ="nowrap">Confirmation</th>
+    </tr>
+    
+    <tr>
+    <td>
+    {{meeting.meeting_id}}
+    </td>
+    <td>
+    {{meeting.topic}}
+    </td>
+    <td>
+    {{meeting.location}}
+    </td>
+    <td style="font-size:92%">
+    {% for day in meeting.breakdayrange %}
+        {% if forloop.last %}
+        {{day|date:"Y/m/d"}}
+        {% else %}
+        {{day|date:"Y/m/d"}}<br/> 
+        {% endif %}
+    {% endfor %}
+    </td>
+    <td nowrap ="nowrap"  style="font-size:92%">
+        
+        {% for pref_period in meeting.preftotime %}
+        {% if forloop.last %}
+        {{pref_period}}
+        {% else %}
+        {{pref_period}}<br/> 
+        {% endif %}
+        {% endfor %}
+        
+    </td>
+    <td>
+    {% if meeting.search_bias %}
+        {% if meeting.search_bias == "DAY_LENGTH" %}
+        Day length
+        {% elif meeting.search_bias == "AVERAGE_IDLE" %}
+        Average idleness
+        {% endif %}
+    {% endif %}
+    </td>
+    <td>
+    {{meeting.delimit}}
+    </td>
+    <td>
+    {% if meeting.conf_method %}
+        {% if meeting.conf_method == "AUTO" %}
+        Automatic
+        {% elif eeting.conf_method == "PROMPT" %}
+        Ask me
+        {% endif %}
+    {% endif %}
+    </td>
+    </tr>
+
+</table>
+
+<table class="dmstable" style="width:100%">
+<caption>
+<b>Scheduling status</b>
+</caption>
+    <tr>
+        <th nowrap ="nowrap">Confirmed Date</th>
+        <th nowrap ="nowrap">Confirmed Period</th>
+        <th nowrap ="nowrap">Confirm</th>
+        <th nowrap ="nowrap">Decline</th>
+        <th nowrap ="nowrap">Invitation</th>
+        <th nowrap ="nowrap">Reschedule</th>
+        <th nowrap ="nowrap">Cancel</th>
+    </tr>
+    <tr>
+        <td>
+        N/A
+        </td>
+        
+        <td>
+        N/A
+        </td>
+        
+        <td>
+        N/A
+        </td>
+        
+        <td>
+        N/A
+        </td>
+        
+        <td>
+        N/A
+        </td>   
+        
+        <td>
+        N/A
+        </td> 
+        
+        <td>
+        N/A
+        </td>                     
+    </tr>
+
+</table>
+
+
+<table class="dmstable" style="width:100%">
+<caption>
+<b>Agent interaction</b>
+</caption>
+<tr>
+<td>
+Stage: {{stage}}
+{%if stage == 1 %}
+Choose a time for the meeting:<br/>
+	{% for period in choose_period%}
+	  <a href="{{request.get_full_path}}&choose={{ period.1 }}"><span class="agenda_day" style="display:inline-block;width:auto;min-width:120px;padding:4px 2px 4px 2px;">{{ period.0 }}</span></a>
+	{% endfor %}
+{%endif%}
+</td>
+</tr>
+</table>
+
+
+<table class="dmstable" style="width:100%">
+<caption>
+<b>Invitee status</b>
+</caption>
+    <tr>
+        <th nowrap ="nowrap">Invitee</th> 
+        <th nowrap ="nowrap">Available</th>
+        <th nowrap ="nowrap">Response to invitation</th>
+    </tr>
+    <tr>
+        <td>
+        N/A
+        </td>
+        
+        <td>
+        N/A
+        </td>
+        
+        <td>
+        N/A
+        </td>
+    </tr>
+</table>
+{% else %}
+{% comment %} General management interface{% endcomment %}
+<h3>Scheduling management</h3>
 <table class="dmstable" style="width:100%">
 <caption><b>
 Unfinished meeting scheduling configuration
@@ -28,7 +188,7 @@ Unfinished meeting scheduling configuration
 	<td>
 	{{unfinished_meeting.location}}
 	</td>
-	<td>
+	<td style="font-size:92%">
 	{% for day in unfinished_meeting.breakdayrange %}
 	    {% if forloop.last %}
 	    {{day|date:"Y/m/d"}}
@@ -37,7 +197,7 @@ Unfinished meeting scheduling configuration
 	    {% endif %}
 	{% endfor %}
 	</td>
-	<td nowrap ="nowrap">
+	<td nowrap ="nowrap"  style="font-size:92%">
 	    
 	    {% for pref_period in unfinished_meeting.preftotime %}
 	    {% if forloop.last %}
@@ -80,7 +240,7 @@ Unfinished meeting scheduling configuration
 	<input type="button" value="Continue" onClick="javascript:location.href = '/meeting/msa/config/';">
 	</div>
 	<div class="help_text">
-    There is currently an unfinished meeting scheduling configuration that is either saved by you or by the system. Click "Continue" to go back to the configuration page.
+    There is currently an unfinished meeting scheduling configuration that is either saved by you or by the system. <br/>Click "Continue" to go back to the configuration page.
     </div>
 {% endif%}
 <table class="dmstable" style="width:100%">
@@ -88,12 +248,79 @@ Unfinished meeting scheduling configuration
 Current meeting being scheduled
 </b></caption>
 {% if current_meeting %}
-	{%for current in current_meeting %}
-	{{current.topic}}
-	{% endfor %}
+{% with current_meeting.0 as current_meeting %}
+	<tr>
+        <th nowrap ="nowrap">Topic</th> 
+        <th nowrap ="nowrap">Location</th>
+        <th nowrap ="nowrap">Day Range</th>
+        <th nowrap ="nowrap">Pref Period</th>
+        <th nowrap ="nowrap">Search Bias</th> 
+        <th nowrap ="nowrap">Delimit</th> 
+        <th nowrap ="nowrap">Confirmation</th>
+	</tr>
+	
+    <tr>
+    <td>
+    {{current_meeting.topic}}
+    </td>
+    <td>
+    {{current_meeting.location}}
+    </td>
+    <td style="font-size:92%">
+    {% for day in current_meeting.breakdayrange %}
+        {% if forloop.last %}
+        {{day|date:"Y/m/d"}}
+        {% else %}
+        {{day|date:"Y/m/d"}}<br/> 
+        {% endif %}
+    {% endfor %}
+    </td>
+    <td nowrap ="nowrap"  style="font-size:92%">
+        
+        {% for pref_period in current_meeting.preftotime %}
+        {% if forloop.last %}
+        {{pref_period}}
+        {% else %}
+        {{pref_period}}<br/> 
+        {% endif %}
+        {% endfor %}
+        
+    </td>
+    <td>
+    {% if current_meeting.search_bias %}
+        {% if current_meeting.search_bias == "DAY_LENGTH" %}
+        Day length
+        {% elif current_meeting.search_bias == "AVERAGE_IDLE" %}
+        Average idleness
+        {% endif %}
+    {% endif %}
+    </td>
+    <td>
+    {{current_meeting.delimit}}
+    </td>
+    <td>
+    {% if current_meeting.conf_method %}
+        {% if current_meeting.conf_method == "AUTO" %}
+        Automatic
+        {% elif current_meeting.conf_method == "PROMPT" %}
+        Ask me
+        {% endif %}
+    {% endif %}
+    </td>
+    </tr>
+	{% endwith %}
 {% else %}
     <caption>No result</caption>
 {% endif %}
 </table>
+{% if current_meeting %}
+    <div class="help_text">
+    <input type="button" value="Management" onClick="javascript:location.href = '/meeting/msa/ms/?id={{current_meeting.0.meeting_id}}';">
+    </div>
+    <div class="help_text">
+    There is currently a meeting being scheduled. <br/>Click "Management" to manage the scheduling of this meeting.
+    </div>
+{% endif%}
+{% endif %}
 
 {% endblock %}

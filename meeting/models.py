@@ -50,9 +50,9 @@ UserInviteeMeeting (UIM)
 class UserInviteeMeeting(models.Model):
     
     id = models.AutoField(primary_key=True)
-    host_id = models.ForeignKey('user.UserSPADE', db_column="user_id", related_name='+')
-    meeting_id = models.ForeignKey('Meeting', db_column="user_id", related_name='+')
-    invitee_id = models.ForeignKey('user.UserSPADE', db_column="user_id", related_name='+')
+    host_id = models.ForeignKey('user.UserSPADE', db_column="host_id", related_name='+')
+    meeting_id = models.ForeignKey('Meeting', db_column="meeting_id", related_name='+')
+    invitee_id = models.ForeignKey('user.UserSPADE', db_column="invitee_id", related_name='+')
     available = models.CharField(max_length=15)
     accept = models.CharField(max_length=15)
     class Meta:
@@ -461,6 +461,172 @@ def getActiveUserInvitee(user_id):
     return active_user_invitee
       
 
+
+"""
+addUIM()
+
+Add invitees whose CAs are active to dms.user_invitee_meeting upon the submission of meeting config (start)
+
+"""
+
+
+def addUIM(host_id, meeting_id, invitee_id):
+    
+    # First check whether the record exists
+    check = UserInviteeMeeting.objects.filter(host_id=host_id,meeting_id=meeting_id,invitee_id=invitee_id)
+    # If exists, do nothing
+    if len(check) > 0:
+        pass
+    
+    # Else, insert it
+    else:
+        
+        # Get the foreign key instances
+        host_user = User.objects.get(id=host_id)
+        host_user_spade = UserSPADE.objects.get(user_id=host_user)
+        
+        invitee_user = User.objects.get(id=invitee_id)
+        invitee_user_spade = UserSPADE.objects.get(user_id=invitee_user)
+        
+        meeting_id = Meeting.objects.get(meeting_id=meeting_id)
+        
+        uim = UserInviteeMeeting(host_id=host_user_spade, meeting_id=meeting_id, invitee_id=invitee_user_spade)
+        
+        uim.save()
+    
+
+"""
+
+addAllUIM()
+
+Add all active invitees of a user (host) to UIM
+"""
+
+def addAllUIM(user_id, meeting_id):
+    user_invitee = getActiveUserInvitee(user_id)
+    
+    # Convert user_invitee instance into a list of id
+    id_list = user_invitee.values_list('invitee_id',flat=True)
+    
+    # Add every id in the list to UIM
+    for invitee_id in id_list:
+        addUIM(user_id, meeting_id, invitee_id)
+        
+
+"""
+getUIMInvitee()
+
+Get all the invitees of a specific meeting in the dms.user_invitee_meeting
+
+"""
+def getUIMInvitee(meeting_id):
+    uim_invitee = UserInviteeMeeting.objects.filter(meeting_id=meeting_id)
+    return uim_invitee
+
+
+
+"""
+getStage()
+
+Get the scheduling stage of a current meeting being scheduled
+
+Code mapping:
+ 0 => conf_period: NULL :: Calculating and generating period
+ 1 => conf_period: True :: Waiting for host to confirm period using choose_period
+ 2 => conf_period: False :: Scheduling failed (** waiting for user to cancel or reschedule)
+ 3 => conf_period: PERIOD :: Period confirmed
+ 3 => stat_id: ID :: Statistics acquired
+ 0,1,2 => stat_id: NULL :: (field not available)
+ 0,1,2 => invite: NULL :: (field not available)
+ 3 => invite: NULL :: Waiting for host to send invitation, ** reschedule or cancel
+ 4 => invite: True :: Invitation sent
+ 5 => invite: False :: Invitation not sent and meeting canceled
+ 4 => cancel: NULL :: No declination feedback from VIP; or declination received but host hasn't yet give response (** waiting for host to reschedule or cancel)
+ 6 (4) => cancel: True :: One or more VIP declined the invitation, and meeting canceled by host
+ 7 (4) => cancel: False :: One or more VIP declined the invitation, but meeting continued by host
+ 
+
+"""
+def getStage(meeting_id):
+    meeting = Meeting.objects.get(meeting_id=meeting_id)
+    
+    if meeting.conf_period == "" :
+        return 0
+        
+    elif meeting.conf_period == "True" :
+        return 1
+    
+    elif meeting.conf_period == "False":        
+        return 2
+
+    elif meeting.conf_period.isdigit() and meeting.invite == "" :
+        return 3
+    
+    elif meeting.conf_period.isdigit() and meeting.invite == "True" and meeting.cancel == "":
+        return 4
+    
+    elif meeting.conf_period.isdigit() and meeting.invite == "False" :
+        return 5
+    
+    elif meeting.conf_period.isdigit() and meeting.invite == "True" and meeting.cancel == "True":
+        return 6
+    
+    elif meeting.conf_period.isdigit() and meeting.invite == "True" and meeting.cancel == "False":
+        return 7
+
+
+"""
+getChoosePeriod()
+
+Interact helper function
+Stage code: 1
+Waiting for host to choose confirmed period from choose period
+Return choose_tuple_list [( time_format1, period1 ), (time_format2, period2) , ...]
+
+"""
+ 
+def getChoosePeriod(meeting_id):
+    meeting = Meeting.objects.get(meeting_id=meeting_id)
+    choose_period = meeting.choose_period
+    choose_list = choose_period.split(";")
+    choose_tuple_list = []
+    
+    for period_str in choose_list:
+        period = int(period_str)
+        time = period2Time(period)
+        
+        # Append the tuple (time, period) into choose_tuple_list
+        choose_tuple_list.append((time, period))
+        
+    return choose_tuple_list
+
+
+
+"""
+updateConfPeriod()
+
+Update dms.meeting.conf_period with the period that is chosen by the host
+"""
+
+def updateConfPeriod(meeting_id,choose_period):
+    meeting = Meeting.objects.get(meeting_id=meeting_id)
+    meeting.conf_period = choose_period
+    meeting.save()
+
+
+
+def updateInvite(meeting_id):
+    pass
+
+
+def updateCancel(meeting_id):
+    pass
+
+
+def reschedule(meeting_id):
+    pass
+
+    
 """
 Other methods
 ############
@@ -498,6 +664,8 @@ def period2Time(period):
     end_time = "%02d:00"%(end+6)
     time = "%s - %s"%(start_time, end_time)
     return time
+    
+    
     
 """
 combinedPeriod2Time()

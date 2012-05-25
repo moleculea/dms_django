@@ -6,6 +6,11 @@
 {% block subject %}
     <h3>Second step: specify Preference Period</h3>
 {% endblock %}
+{% if pref_message %}
+<div class="help_text">
+{{ pref_message }}
+</div>
+{% endif %}
 <div class="agenda_month">
 <table class="agenda_timetable">
 <tr>
