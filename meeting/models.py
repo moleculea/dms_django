@@ -226,7 +226,7 @@ MSA
 
 class MSA(models.Model):
     id = models.AutoField(primary_key=True)
-    meeting = models.ForeignKey('Meeting', unique=True, db_column='meeting_id',related_name='+')
+    meeting_id = models.ForeignKey('Meeting', unique=True, db_column='meeting_id',related_name='+')
     user_id = models.ForeignKey('user.UserSPADE', db_column='user_id',related_name='+')
     active = models.CharField(max_length=15)
     class Meta:
@@ -351,7 +351,7 @@ def getCurrentMeeting(user_id):
     # Meetings whose config has finished (length!=0) that are neither in dms.meeting_success nor dms.meeting_canceled
     # Normally only ONE or none
     
-    current = Meeting.objects.exclude(meeting_id__in=success).exclude(meeting_id__in=canceled).exclude(length=0)
+    current = Meeting.objects.filter(host_id=user_id).exclude(meeting_id__in=success).exclude(meeting_id__in=canceled).exclude(length=0)
     
     return current
     
@@ -512,7 +512,10 @@ def addUIM(host_id, meeting_id, invitee_id):
         
         meeting_id = Meeting.objects.get(meeting_id=meeting_id)
         
-        uim = UserInviteeMeeting(host_id=host_user_spade, meeting_id=meeting_id, invitee_id=invitee_user_spade)
+        user_ca = UserCA.objects.get(user_id=invitee_id)
+        accept = user_ca.accept
+        
+        uim = UserInviteeMeeting(host_id=host_user_spade, meeting_id=meeting_id, invitee_id=invitee_user_spade,accept=accept)
         
         uim.save()
     
@@ -623,9 +626,12 @@ def getStage(meeting_id, user_id):
     elif meeting.conf_period == "True" :
         return 1
     
+    elif meeting.reschedule == "True":
+        return 9
+    
     elif meeting.conf_period == "False":        
         return 2
-
+    
     elif meeting.conf_period.isdigit() and meeting.invite == "" :
         return 3
     
@@ -647,8 +653,6 @@ def getStage(meeting_id, user_id):
     elif meeting.conf_period.isdigit() and meeting.invite == "True" and meeting.cancel == "False":
         return 8
     
-    elif meeting.reschedule == "True":
-        return 9
 
 """
 getMeetingState()
@@ -726,7 +730,8 @@ def updateConfPeriod(meeting_id,choose_period):
 """
 updateInvite()
 
-Update dms.meeting.invite with teh value from GET
+Update dms.meeting.invite with the value from GET
+
 """
 
 def updateInvite(meeting_id, invite):
@@ -743,26 +748,97 @@ def updateInvite(meeting_id, invite):
         meeting.save()
 
 
-def updateCancel(meeting_id, cancel):
+"""
+updateCancel()
+
+Update dms.meeting.cancel with the value from GET
+if cancel is "force", then direcly add the meeting to dms.meeting_canceled and add host_id to MSA so that ALCC will shut it down
+
+"""
+
+def updateCancel(meeting_id, user_id, cancel):
     cancel = cancel.strip()
     
     if cancel == "true" or cancel == "false":
         
         if cancel == "true":
             cancel = "True"
+            
         if cancel == "false":
             cancel = "False"
+            
         meeting = Meeting.objects.get(meeting_id=meeting_id)
         meeting.cancel = cancel
         meeting.save()
     
+    ### Force cancel ####
     # Directly add the meeting to dms.meeting_canceled
     elif cancel == "force":
-        pass
-    
+        
+        addToMeetingCanceled(meeting_id, user_id)
+        addToMSA(user_id, meeting_id, 'False')
 
+"""
+addToMeetingCanceled()
+
+Force cancel
+Add the meeting to dms.meeting_canceled
+"""
+
+def addToMeetingCanceled(meeting_id, host_id):
+    
+    # If meeting does not exist in dms.meeting_canceled
+    if not isMeetingCanceled:
+        meeting = Meeting.objects.get(meeting_id=meeting_id)
+        user_spade = UserSPADE.objects.get(user_id=host_id)
+        meeting_canceled = MeetingCanceled(meeting_id=meeting, host_id=user_spade, stage="FC")
+        meeting_canceled.save()
+
+
+"""
+isMeetingCanceled()
+Determine whether a meeting exists in dms.meeting_canceled
+
+"""
+def isMeetingCanceled(meeting_id):
+    
+    meeting_canceled = MeetingCanceled.objects.filter(meeting_id=meeting_id)
+    
+    if len(meeting_canceled) > 0:
+        return True
+    else:
+        return False
+
+"""
+
+updateReschedule()
+
+Update dms.meeting.reschedule to True
+"""
 def updateReschedule(meeting_id):
-    pass
+    meeting = Meeting.objects.get(meeting_id=meeting_id)
+    meeting.reschedule = True
+    meeting.save()
+
+
+
+
+"""
+addToMSA()
+
+Add the meeting_id and host_id into dms.msa so that ALCC can start the MSA
+
+"""
+
+def addToMSA(host_id, meeting_id, active):
+    check = MSA.objects.filter(user_id=host_id)
+    if len(check) > 0:
+        pass
+    else:
+        meeting = Meeting.objects.get(meeting_id=meeting_id)
+        user = UserSPADE.objects.get(user_id=host_id)
+        msa = MSA(user_id=user,meeting_id=meeting,active=active)
+        msa.save()
 
     
 """

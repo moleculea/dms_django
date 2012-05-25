@@ -6,5 +6,34 @@
 {% block subject %}
     <h3>Scheduling log</h3>
 {% endblock %}
-
+<table class="dmstable">
+<th>
+ID
+</th>
+<th>
+Topic
+</th>
+<th>
+Stage Code
+</th>
+<th>
+State
+</th>
+{% for mt in meeting_list %}
+<tr>
+<td>
+{{ mt.meeting_id}}
+</td>
+<td>
+<a href="/meeting/msa/ms/?id={{ mt.meeting_id}}">{{ mt.topic }}</a>
+</td>
+<td>
+{{ mt.stage_code }}
+</td>
+<td>
+{{ mt.meeting_state }}
+</td>
+</tr>
+{% endfor %}
+</table>
 {% endblock %}

@@ -227,6 +227,9 @@ def scheduling_config(request):
     year_month = None
     day_range_message = None
     
+    if getCurrentMeeting(user_id):
+        return HttpResponseRedirect("/meeting/msa/ms/")
+    
     if request.GET:
         # Get date from GET (?month=)
         year_month = request.GET.get('month', None)
@@ -431,6 +434,10 @@ def scheduling_config_init(request):
             # to dms.user_invitee_meeting
             addAllUIM(user_id, meeting_id)
             
+            # Add to MSA so that ALCC will start MSA
+            addToMSA(user_id, meeting_id, True)
+            
+            
             return HttpResponseRedirect("/meeting/msa/ms/?id=%s"%meeting_id)
             
         elif action == "Save":
@@ -521,9 +528,15 @@ def scheduling_management(request):
         
         cancel = request.GET.get('cancel', None)
         if cancel:
-            updateCancel(meeting_id, cancel)
+            # Update meeting.cancel or force cancel
+            updateCancel(meeting_id, user_id, cancel)
             return HttpResponseRedirect('/meeting/msa/ms/?id=%s'%meeting_id)
+            
         
+        cancel = request.GET.get('reschedule', None)
+        if cancel:
+            updateReschedule(meeting_id)
+            return HttpResponseRedirect('/meeting/msa/ms/?id=%s'%meeting_id)
         
         ### Initialize variables for stage actions ###
         stage = 0
@@ -543,7 +556,7 @@ def scheduling_management(request):
         ### Load meeting and invitee instance ###
         # Get static things (initial parameters, other status, invitees) and display
         # Get the meeting
-        meeting = Meeting.objects.get(meeting_id=meeting_id)
+        meeting = Meeting.objects.get(host_id=user_id, meeting_id=meeting_id)
         
         #### Get the state of meeting (meeting_id GET from ?id=MEETING_ID) ###
         meeting_state = getMeetingState(meeting_id, user_id)
@@ -581,7 +594,21 @@ def scheduling_log(request):
     username = request.user.username
     user_id = request.user.id
     
-    context = {'username':username} 
+    
+    meeting = Meeting.objects.filter(host_id=user_id)
+    meeting_list = []
+    
+    meeting_state_text = ['Unfinished', 'Being scheduled', 'Succeeded', 'Expired', 'Canceled']
+    for mt in meeting:
+        md = {}
+        md['meeting_id'] = mt.meeting_id
+        md['topic'] = mt.topic
+        md['stage_code'] = getStage(mt.meeting_id, user_id)
+        meeting_state = getMeetingState(mt.meeting_id, user_id)
+        md['meeting_state'] = meeting_state_text[meeting_state]
+        meeting_list.append(md)
+        
+    context = {'username':username,'meeting_list':meeting_list} 
     return render_to_response('meeting/meeting_scheduling_log.html',context,context_instance=RequestContext(request))
 
 
