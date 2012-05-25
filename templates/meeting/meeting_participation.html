@@ -18,9 +18,9 @@ CA state
 <td>
 {%if user_ca %}
     {%if user_ca.active == "True" %}
-    <span style="color:#228B22">Active</span>
+    <span class="color_true">Active</span>
     {%elif user_ca.accept == "False" %}
-    <span style="color:#B22222">Inactive</span>
+    <span class="color_false">Inactive</span>
     {% endif%}
 {%else%}
 None
@@ -38,11 +38,11 @@ Default response to invitation
 <td>
 {%if user_ca %}
     {%if user_ca.accept == "True" %}
-    <span style="color:#228B22">Accept</span>
+    <span class="color_true">Accept</span>
     {% elif user_ca.accept == "False" %}
-    <span style="color:#B22222">Decline</span>
+    <span class="color_false">Decline</span>
     {% else %}
-    <span style="color:#DAA520">Silent</span>
+    <span class="color_none">Silent</span>
     {% endif%}
 {%else%}
 Not configured

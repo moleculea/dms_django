@@ -506,7 +506,7 @@ def scheduling_management(request):
     # Render the management interface for this meeting 
     # This interface is able manage or view any meeting in dms.meeting
     if meeting_id:
-
+        meeting_id= int(meeting_id)
         ### GET actions ###
         # Update conf_period with the chosen period
         choose = request.GET.get('choose', None)
@@ -514,27 +514,48 @@ def scheduling_management(request):
             updateConfPeriod(meeting_id, choose)
             return HttpResponseRedirect('/meeting/msa/ms/?id=%s'%meeting_id)    
 
+        invite = request.GET.get('invite', None)
+        if invite:
+            updateInvite(meeting_id, invite)
+            return HttpResponseRedirect('/meeting/msa/ms/?id=%s'%meeting_id)  
+        
+        cancel = request.GET.get('cancel', None)
+        if cancel:
+            updateCancel(meeting_id, cancel)
+            return HttpResponseRedirect('/meeting/msa/ms/?id=%s'%meeting_id)
+        
+        
         ### Initialize variables for stage actions ###
         stage = 0
         choose_period = None
+        invitation = None
         
         ### Stage actions ###
-        stage = getStage(meeting_id)
+        stage = getStage(meeting_id, user_id)
+        
+        # Stage 1: Let the host choose period
         if stage == 1:
             choose_period = getChoosePeriod(meeting_id)
+
+        if stage == 4:
+            pass
         
         ### Load meeting and invitee instance ###
         # Get static things (initial parameters, other status, invitees) and display
         # Get the meeting
         meeting = Meeting.objects.get(meeting_id=meeting_id)
         
+        #### Get the state of meeting (meeting_id GET from ?id=MEETING_ID) ###
+        meeting_state = getMeetingState(meeting_id, user_id)
+        
         # Get invitees of this meeting
         # If this is an unfinised meeting config, 
         # uim_invitee is an empty list
-        uim_invitee = getUIMInvitee(meeting_id)
         
-        
-        context = {'username':username,'request':request,'meeting': meeting,'uim_invitee': uim_invitee,'stage':stage,'choose_period':choose_period} 
+        #uim_invitee = getUIMInvitee(meeting_id)
+        uim_invitee = getUIMWithStatus(meeting_id,user_id)
+        meeting_state_text = ['Unfinished', 'Being scheduled', 'Succeeded', 'Expired', 'Canceled']
+        context = {'username':username,'request':request,'meeting': meeting,'uim_invitee': uim_invitee,'stage':stage,'choose_period':choose_period,'meeting_state':meeting_state,'meeting_state_text':meeting_state_text} 
         
         return render_to_response('meeting/meeting_scheduling_management.html',context,context_instance=RequestContext(request))
         

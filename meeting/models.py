@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from user.models import UserSPADE, UserConfig, UserInvitee
+from user.models import UserSPADE, UserConfig, UserInvitee, getUserInvitee
 
 from django import forms
 from django.forms import ModelForm
@@ -157,7 +157,15 @@ class MeetingStat(models.Model):
     decline = models.IntegerField()
     class Meta:
         db_table = u'meeting_stat'
-
+        
+    # Convert Preference Period into time format list
+    def periodtotime(self):
+        if self.conf_period:
+            return period2Time(self.conf_period)
+        else:
+            return None
+    
+    
 """
 MeetingCanceled
 
@@ -259,7 +267,7 @@ getMeetingSuccessList()
 Get list of successful meetings that are not canceled (truly and temporarily successful)
 i.e. meetings in dms.meeting_success and not in dms.meeting_canceled
 
-Meeting dates after TODAY will be excluded from the results
+Meeting dates before TODAY will be excluded from the results
 """
 def getMeetingSuccessList():
     import datetime
@@ -268,6 +276,19 @@ def getMeetingSuccessList():
     meeting_list = MeetingSuccess.objects.exclude(meeting_id__in=meeting_canceled).filter(date__gt=today).order_by('date','id')
     return meeting_list
 
+
+"""
+getDueMeetingSuccessList()
+
+Get list of successful meetings that are due
+
+"""
+def getDueMeetingSuccessList():
+    import datetime
+    today = datetime.date.today()
+    meeting_canceled = MeetingCanceled.objects.all().values('meeting_id').query
+    meeting_list = MeetingSuccess.objects.exclude(meeting_id__in=meeting_canceled).filter(date__lt=today).order_by('date','id')
+    return meeting_list
 
 """
 getAllMeetingSuccessList()
@@ -297,7 +318,7 @@ Get the unfinished meeting config (not yet submitted meeting, with only day rang
 
 Check whether meeting length (dms.meeting.length) is zero to identify an unfinished config
 
-Only ONE unfinished config is allowed to exist in dms.meeting
+Only ONE unfinished config of a single host is allowed to exist in dms.meeting
 
 """
 
@@ -329,6 +350,7 @@ def getCurrentMeeting(user_id):
     
     # Meetings whose config has finished (length!=0) that are neither in dms.meeting_success nor dms.meeting_canceled
     # Normally only ONE or none
+    
     current = Meeting.objects.exclude(meeting_id__in=success).exclude(meeting_id__in=canceled).exclude(length=0)
     
     return current
@@ -524,6 +546,50 @@ def getUIMInvitee(meeting_id):
     return uim_invitee
 
 
+"""
+getUIMWithStatus()
+
+Get a list of invitees of a meeting with their status and username to the host
+
+[{invitee_id: INVITEE_ID, available: True, accept: True, status: 1, name: NAME} , {},...]
+"""
+
+def getUIMWithStatus(meeting_id,user_id):
+    import copy
+    uim_invitee = getUIMInvitee(meeting_id)
+    uim_dict = uim_invitee.values('invitee_id','available','accept')
+    uim_with_status = []
+    dict = {}
+    for uim in uim_dict:
+        invitee_id = uim['invitee_id']
+        user_invitee = UserInvitee.objects.get(invitee_id =invitee_id)
+        dict = uim
+        # Save status
+        dict['status'] = user_invitee.invitee_status
+        # Save username
+        dict['name'] = user_invitee.invitee_id.user_name
+        uim_with_status.append(dict)
+    return uim_with_status
+
+"""
+isVIPDecline()
+
+Determine whether a VIP declined the invitation (dms.user_invitee_meeting.accept=False)
+
+"""
+def isVIPDecline(meeting_id, user_id):
+    user_invitee = getUserInvitee(user_id)
+    vip_invitee = user_invitee.filter(invitee_status=1)
+    vip_id_list = vip_invitee.values_list('invitee_id',flat=True)
+    uim_invitee = getUIMInvitee(meeting_id)
+    result = False
+    for invitee in uim_invitee:
+        if invitee.invitee_id.user_id.id in vip_id_list:
+            if invitee.accept == "False":
+                result = True
+                break
+            
+    return result
 
 """
 getStage()
@@ -541,13 +607,14 @@ Code mapping:
  3 => invite: NULL :: Waiting for host to send invitation, ** reschedule or cancel
  4 => invite: True :: Invitation sent
  5 => invite: False :: Invitation not sent and meeting canceled
- 4 => cancel: NULL :: No declination feedback from VIP; or declination received but host hasn't yet give response (** waiting for host to reschedule or cancel)
- 6 (4) => cancel: True :: One or more VIP declined the invitation, and meeting canceled by host
- 7 (4) => cancel: False :: One or more VIP declined the invitation, but meeting continued by host
+ 4 => cancel: NULL :: No declination feedback from VIP (** waiting for host to reschedule or cancel)
+ 6 => cancel: NULL :: ; Declination received but host hasn't yet give response (** waiting for host to reschedule or cancel)
+ 7 (4) => cancel: True :: One or more VIP declined the invitation, and meeting canceled by host
+ 8 (4) => cancel: False :: One or more VIP declined the invitation, but meeting continued by host
+ 9 => reschedule : True :: The meeting will be rescheduled soon. Please wait until ALCC refreshes the meeting configuration.
  
-
 """
-def getStage(meeting_id):
+def getStage(meeting_id, user_id):
     meeting = Meeting.objects.get(meeting_id=meeting_id)
     
     if meeting.conf_period == "" :
@@ -563,17 +630,60 @@ def getStage(meeting_id):
         return 3
     
     elif meeting.conf_period.isdigit() and meeting.invite == "True" and meeting.cancel == "":
-        return 4
+        # VIP declination received
+        if isVIPDecline(meeting_id, user_id):
+            return 6
+        
+        # No VIP declination received
+        else:
+            return 4
     
     elif meeting.conf_period.isdigit() and meeting.invite == "False" :
         return 5
     
     elif meeting.conf_period.isdigit() and meeting.invite == "True" and meeting.cancel == "True":
-        return 6
+        return 7
     
     elif meeting.conf_period.isdigit() and meeting.invite == "True" and meeting.cancel == "False":
-        return 7
+        return 8
+    
+    elif meeting.reschedule == "True":
+        return 9
 
+"""
+getMeetingState()
+
+Get the meeting state of any given meeting_id
+Return values
+
+# -1: Default
+# 0 : Unfinished config :: 
+# 1 : Current meeting (neither success nor canceled)       :: This meeting is being scheduled  (operative)
+# 2:  Successful meeting before due day                    :: This meeting is successful  (operative)
+# 3:  Successful meeting that are due (expired meetings)   :: This meeting is due
+# 4   Canceled meeting                                     :: This meeting has been canceled
+"""
+def getMeetingState(meeting_id, user_id):
+    meeting_state = -1
+    
+    if getUnfinishedConfig(user_id):
+        unfinished = getUnfinishedConfig(user_id)
+        if meeting_id == unfinished.meeting_id:
+            meeting_state = 0
+
+    if meeting_id in getCurrentMeeting(user_id).values_list('meeting_id',flat=True):
+        meeting_state = 1
+    
+    if meeting_id in getMeetingSuccessList().values_list('meeting_id',flat=True):
+        meeting_state = 2
+      
+    if meeting_id in getDueMeetingSuccessList().values_list('meeting_id',flat=True):
+        meeting_state = 3 
+               
+    if meeting_id in getMeetingCanceledList().values_list('meeting_id',flat=True):
+        meeting_state = 4     
+
+    return meeting_state
 
 """
 getChoosePeriod()
@@ -601,7 +711,6 @@ def getChoosePeriod(meeting_id):
     return choose_tuple_list
 
 
-
 """
 updateConfPeriod()
 
@@ -614,16 +723,45 @@ def updateConfPeriod(meeting_id,choose_period):
     meeting.save()
 
 
+"""
+updateInvite()
 
-def updateInvite(meeting_id):
-    pass
+Update dms.meeting.invite with teh value from GET
+"""
+
+def updateInvite(meeting_id, invite):
+    
+    invite = invite.strip()
+    if invite == "true" or invite == "false":
+        if invite == "true":
+            invite = "True"
+        if invite == "false":
+            invite = "False"
+            
+        meeting = Meeting.objects.get(meeting_id=meeting_id)
+        meeting.invite = invite
+        meeting.save()
 
 
-def updateCancel(meeting_id):
-    pass
+def updateCancel(meeting_id, cancel):
+    cancel = cancel.strip()
+    
+    if cancel == "true" or cancel == "false":
+        
+        if cancel == "true":
+            cancel = "True"
+        if cancel == "false":
+            cancel = "False"
+        meeting = Meeting.objects.get(meeting_id=meeting_id)
+        meeting.cancel = cancel
+        meeting.save()
+    
+    # Directly add the meeting to dms.meeting_canceled
+    elif cancel == "force":
+        pass
+    
 
-
-def reschedule(meeting_id):
+def updateReschedule(meeting_id):
     pass
 
     

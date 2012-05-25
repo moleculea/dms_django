@@ -5,7 +5,7 @@
 {% block content %}
 
 {% if meeting %}
-    <h3>Management for "{{meeting.topic}}"</h3>
+    <h3>Management for "{{meeting.topic}}" ({% for text in meeting_state_text %}{% if forloop.counter0 == meeting_state %}{{text}}{% endif %}{% endfor %})</h3>
 {% comment %} Specific management interface{% endcomment %}
 <table class="dmstable" style="width:100%">
 <caption>
@@ -14,6 +14,7 @@
     <tr>
         <th nowrap ="nowrap">ID</th> 
         <th nowrap ="nowrap">Topic</th> 
+        <th nowrap ="nowrap">Length</th> 
         <th nowrap ="nowrap">Location</th>
         <th nowrap ="nowrap">Day Range</th>
         <th nowrap ="nowrap">Pref Period</th>
@@ -30,14 +31,17 @@
     {{meeting.topic}}
     </td>
     <td>
+    {{meeting.length}}
+    </td>
+    <td>
     {{meeting.location}}
     </td>
     <td style="font-size:92%">
     {% for day in meeting.breakdayrange %}
         {% if forloop.last %}
-        {{day|date:"Y/m/d"}}
+        <a href="/agenda/{{day|date:"Y/m/d/"}}">{{day|date:"Y/m/d"}}</a>
         {% else %}
-        {{day|date:"Y/m/d"}}<br/> 
+        <a href="/agenda/{{day|date:"Y/m/d/"}}">{{day|date:"Y/m/d"}}</a><br/> 
         {% endif %}
     {% endfor %}
     </td>
@@ -68,7 +72,7 @@
     {% if meeting.conf_method %}
         {% if meeting.conf_method == "AUTO" %}
         Automatic
-        {% elif eeting.conf_method == "PROMPT" %}
+        {% elif meeting.conf_method == "PROMPT" %}
         Ask me
         {% endif %}
     {% endif %}
@@ -87,37 +91,78 @@
         <th nowrap ="nowrap">Confirm</th>
         <th nowrap ="nowrap">Decline</th>
         <th nowrap ="nowrap">Invitation</th>
-        <th nowrap ="nowrap">Reschedule</th>
-        <th nowrap ="nowrap">Cancel</th>
+        <th nowrap ="nowrap">Status</th>
     </tr>
     <tr>
         <td>
+        {%if meeting.stat_id.date %}
+        <a href="/agenda/{{ meeting.stat_id.date|date:"Y/m/d/" }}">{{ meeting.stat_id.date|date:"Y/m/d" }}</a>
+        {% else %}
         N/A
+        {% endif %}
         </td>
         
         <td>
+        {%if meeting.stat_id.periodtotime %}
+        {{ meeting.stat_id.periodtotime }}
+        {% else %}
         N/A
+        {% endif %}
         </td>
         
         <td>
+        {%if meeting.stat_id.confirm %}
+        {{ meeting.stat_id.confirm }}
+        {% else %}
         N/A
+        {% endif %}
         </td>
         
         <td>
+        {%if meeting.stat_id.decline %}
+        {{ meeting.stat_id.decline }}
+        {% else %}
         N/A
+        {% endif %}
         </td>
         
         <td>
-        N/A
+        {%if meeting.invite %}
+            {%if meeting.invite == "True" %}
+            <span class="color_true">Sent</span>
+            {%elif meeting.invite == "False" %}
+            <span class="color_false">Canceled</span>
+            {% endif %}
+        {% else %}
+        Pending
+        {% endif %}
         </td>   
-        
         <td>
-        N/A
-        </td> 
-        
-        <td>
-        N/A
-        </td>                     
+        {%if stage == 0 or stage == 1 %}
+        Pending
+        {% endif %}
+        {%if stage == 2 %}
+        <span class="color_false">Failed</span>
+        {% endif %}
+        {%if stage == 3 %}
+        <span class="color_true">Succeeded</span>
+        {% endif %}
+        {%if stage == 4 %}
+        <span class="color_true">Succeeded</span>
+        {% endif %}
+        {%if stage == 5 %}
+        <span class="color_false">Canceled</span>
+        {% endif %}
+        {%if stage == 6 %}
+        <span class="color_true">Succeeded</span>
+        {% endif %}
+        {%if stage == 7 %}
+        <span class="color_false">Canceled</span>
+        {% endif %}
+        {%if stage == 8 %}
+        <span class="color_true">Succeeded</span>
+        {% endif %}
+        </td>            
     </tr>
 
 </table>
@@ -129,12 +174,70 @@
 </caption>
 <tr>
 <td>
-Stage: {{stage}}
+Stage Code: {{stage}}<br/>
+{%if stage == 0 %}
+Scheduling has just started. Please wait for MSA until it delivers you message for interaction
+{%endif%}
+
 {%if stage == 1 %}
 Choose a time for the meeting:<br/>
 	{% for period in choose_period%}
-	  <a href="{{request.get_full_path}}&choose={{ period.1 }}"><span class="agenda_day" style="display:inline-block;width:auto;min-width:120px;padding:4px 2px 4px 2px;">{{ period.0 }}</span></a>
+	  <a href="{{request.get_full_path}}&choose={{ period.1 }}"><span class="interact_button">{{ period.0 }}</span></a>
 	{% endfor %}
+{%endif%}
+
+{%if stage == 2 %}
+Scheduling failed due to non-existence of Available Period. You can cancel the meeting or reschedule with the same Initial Parameters.<br/>
+If no response is given in 60 seconds, the system will automatically cancels the meeting.<br/>
+    <a href="{{request.get_full_path}}&reschedule=true"><span class="interact_button">Reschedule</span></a>
+    <a href="{{request.get_full_path}}&cancel=force"><span class="interact_cancel">Cancel</span></a>
+{%endif%}
+
+{%if stage == 3 %}
+The Confirmed Period has been determined, and the scheduling succeeds! Do you decide to send invitations now?<br/>
+<span style="color:#B22222">Please do not send invitation until Confirmed Date and Period appeared in the table "Scheduling status" above.
+<br/>
+     <a href="{{request.get_full_path}}&invite=true"><span class="interact_button" >Send invitations</span></a>     
+     <a href="{{request.get_full_path}}&reschedule=true"><span class="interact_button">Reschedule</span></a>
+     <a href="{{request.get_full_path}}&invite=false"><span class="interact_cancel">Cancel</span></a>
+{%endif%}
+
+{%if stage == 4 %}
+The invitations have been sent. The MSA Feedback has not received declination from any VIP. You can still cancel or reschedule the meeting.<br/>
+
+    <a href="{{request.get_full_path}}&reschedule=true"><span class="interact_button">Reschedule</span></a>
+    <a href="{{request.get_full_path}}&cancel=force"><span class="interact_cancel">Cancel</span></a>
+    
+{%endif%}
+
+{%if stage == 5 %}
+The invitation has been canceled. The meeting is canceled.
+{%endif%}
+{%if stage == 6 %}
+The MSA Feedback has received declination from one or more VIPs. You can check the invitee table below as for who declined.<br/> Click "Continue" to ignore the declination.<br/>
+
+    <a href="{{request.get_full_path}}&cancel=false"><span class="interact_button">Continue</span></a>
+    <a href="{{request.get_full_path}}&reschedule=true"><span class="interact_button">Reschedule</span></a>
+    <a href="{{request.get_full_path}}&cancel=true"><span class="interact_cancel">Cancel</span></a>
+    
+
+{%endif%}
+
+{%if stage == 7 %}
+Upon declination from one or more VIPs received by MSA Feedback, the meeting is canceled.
+
+{%endif%}
+
+{%if stage == 8 %}
+Though MSA Feedback received declination from one or more VIPs, the meeting continued.
+
+    <a href="{{request.get_full_path}}&reschedule=true"><span class="interact_button">Reschedule</span></a>
+    <a href="{{request.get_full_path}}&cancel=true"><span class="interact_cancel">Cancel</span></a>
+    
+{%endif%}
+{%if stage == 9 %}
+The meeting will be rescheduled soon. Please wait until ALCC refreshes the meeting configuration.
+
 {%endif%}
 </td>
 </tr>
@@ -147,24 +250,57 @@ Choose a time for the meeting:<br/>
 </caption>
     <tr>
         <th nowrap ="nowrap">Invitee</th> 
-        <th nowrap ="nowrap">Available</th>
+        <th nowrap ="nowrap">Status</th>
+        <th nowrap ="nowrap">Agenda availability</th>
         <th nowrap ="nowrap">Response to invitation</th>
     </tr>
+    {% for invitee in uim_invitee %}
+    
+    {% if invitee.status %}
+    <tr style="background-color:#FFDAB9">
+    {% else %}
     <tr>
+    {% endif %}
         <td>
-        N/A
+        <a href="/user/?id={{invitee.invitee_id}}">{{ invitee.name }}</a>
         </td>
-        
         <td>
-        N/A
+         {% if invitee.status == 1 %}
+            VIP
+         {% else %}
+         Non-VIP
+         {% endif %}
         </td>
-        
         <td>
-        N/A
+         {% if invitee.available == "True" %}
+         <span class="color_true">Available</span>
+         {% elif invitee.available == "False" %}
+         <span class="color_false">Unavailable</span>
+         {% else %}
+         N/A
+         {% endif %}
+        </td>
+        <td>
+        {% if stage == 4 or stage == 6 or stage == 7 or stage == 8 %}
+	         {% if invitee.accept == "True" %}
+	         <span class="color_true">Accept</span>
+	         {% elif invitee.accept == "False" %}
+	         <span class="color_false">Decline</span>
+	         {% else %}
+	         <span class="color_none">Silent</span>
+	         {% endif %}
+	    {% else %}
+	    N/A
+	    {% endif %}
         </td>
     </tr>
+    {% endfor %}
 </table>
+<div class="help_text" >
+<div class="lengend_box" style="background-color:#FFDAB9"></div> VIP Invitee
+</div>
 {% else %}
+
 {% comment %} General management interface{% endcomment %}
 <h3>Scheduling management</h3>
 <table class="dmstable" style="width:100%">

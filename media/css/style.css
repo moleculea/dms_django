@@ -517,3 +517,53 @@ table caption {
 .dmstable a{
 	color:#4169E1;
 }
+
+.interact_button {
+	text-align:center;
+	display:inline-block;
+	width:auto;
+	min-width:120px;
+	padding:4px 2px 4px 2px;
+	border:1px solid #6495ED;
+	background-color:#E6E6FA;
+	margin:4px 0px 4px 2px;
+	
+}
+
+
+.interact_button:hover {
+    background-color: #6495ED;
+    color: #FFF;
+}
+
+.interact_cancel {
+	color:#B22222;
+    text-align:center;
+    display:inline-block;
+    width:auto;
+    min-width:120px;
+    padding:4px 2px 4px 2px;
+    border:1px solid #CD5C5C;
+    background-color:#FFA07A;
+    margin:4px 0px 4px 2px;
+    
+}
+
+
+.interact_cancel:hover {
+    background-color: #B22222;
+    color: #FFF;
+}
+
+.color_true{
+	color:#228B22;
+}
+
+.color_false{
+    color:#B22222;
+}
+
+.color_none{
+    color:#DAA520;
+}
+
