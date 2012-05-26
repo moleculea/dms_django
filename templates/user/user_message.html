@@ -4,9 +4,10 @@
 {% block subject %}
     <h3>User messages</h3>
 {% endblock %}
-{%with message as data %}
-{%include "t_pagination.html" %}
+{% with message as data %}
+{% include "t_pagination.html" %}
 {% endwith %}
+
 <table class="dmstable">
 <tr>
     <th>
@@ -18,12 +19,25 @@
 </tr>
 
 {% for m in message %}
+{% if m.read == "False" %}
+<tr style="background-color:#E6E6FA">
+{% else %}
 <tr>
+{% endif %}
+
 <td>
 <a href="{{m.uri}}">{{ m.content_id.content}}</a>
 </td>
-<td>
-{{ m.read}}
+<td style="padding:0 4px 0 0px">
+{% if m.read == "False" %}
+	{% if "?page=" in request.get_full_path %}
+	<a href="{{request.get_full_path}}&message={{m.id}}"><span class="agenda_period" style="width:100%;padding:2px;">&nbsp;</span></a>
+	{% else %}
+	<a href="?message={{m.id}}"><span class="agenda_period" style="width:100%;padding:2px;">&nbsp;</span></a>
+	{% endif %}
+{% else %}
+    
+{% endif %}
 </td>
 </tr>
 {% endfor %}

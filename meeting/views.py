@@ -14,7 +14,7 @@ from meeting.models import *
 from user.models import getUserInviteeIDList,saveUserInvitee,getUserInvitee,updateInviteeStatus,deleteUserInvitee
 
 # Paginator
-from dms.public import pagination_creator
+from dms.public import pagination_creator,redirect_back
 
 from dms.public import dailyPeriod2list
 
@@ -101,9 +101,9 @@ def participation_index(request):
         
     user_ca = getUserCA(user_id)
     uim = getInvitation(user_id)
+    uim = pagination_creator(request, uim, 10)
 
-    
-    context = {'username':username,'user_ca':user_ca,'uim':uim}
+    context = {'username':username,'uim':uim}
 
     return render_to_response('meeting/meeting_participation.html',context,context_instance=RequestContext(request))
   
@@ -146,15 +146,43 @@ def participation_config(request):
     else:
 
         #config_form = ParticipationConfigForm()
-        
         user_ca = getUserCA(user_id)
     
         context = {'username':username,'user_ca':user_ca}
     
         return render_to_response('meeting/meeting_participation_config.html',context,context_instance=RequestContext(request))
       
-  
 
+"""
+participation_invitation()
+
+# url: /meeting/ca/invitation/?meeting=ID
+
+"""
+@login_required
+def participation_invitation(request):
+    
+    username = request.user.username
+    user_id = request.user.id
+    meeting_id = 0
+    if request.GET:
+        # Status update
+        # VIP
+        accept = request.GET.get('accept', None)
+        meeting_id = request.GET.get('id', None)
+        if accept and meeting_id:
+            updateUIM(user_id,meeting_id,accept)
+            return redirect_back(request,'id')
+
+    user_ca = getUserCA(user_id)
+    uim = getInvitationMeeting(user_id,meeting_id)
+    success = MeetingSuccess.objects.filter(meeting_id=meeting_id)
+
+    context = {'username':username,'user_ca':user_ca,'uim':uim,'success':success}
+
+    return render_to_response('meeting/meeting_participation_invitation.html',context,context_instance=RequestContext(request))
+  
+    
   
 """
 scheduling_invitee()
@@ -624,16 +652,3 @@ def scheduling_log(request):
     return render_to_response('meeting/meeting_scheduling_log.html',context,context_instance=RequestContext(request))
 
 
-"""
-redirect_back()
-
-Redirect back to page-based perspective, avoiding multiple query string
-
-"""
-
-def redirect_back(request, getname):
-    getvalue = request.GET.get(getname, None)
-    if getvalue:
-        return HttpResponseRedirect(request.path +"?%s=%s"%(getname,getvalue))
-    else:
-        return HttpResponseRedirect(request.path)

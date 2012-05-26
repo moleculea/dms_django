@@ -24,7 +24,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.core.urlresolvers import reverse
 
 import django.contrib.auth.views as auth_views
-from dms.public import pagination_creator
+from dms.public import pagination_creator,redirect_back
 
 # Pagination
 from django.core.paginator import Paginator
@@ -199,10 +199,17 @@ def message(request):
     username = request.user.username
     user_id = request.user.id
     
+    if request.GET:
+        message = request.GET.get('message', None)
+        if message:
+            readMessage(message)
+            return redirect_back(request,'page')
+        
     message = getUserMessage(user_id)
-    #message = pagination_creator(request, message, 10)
+    message = pagination_creator(request, message, 10)
     
-    context = {'message':message,'username':username}
+    context = {'message':message,'username':username,'request':request}
+    
     return render_to_response('user/user_message.html',context, context_instance=RequestContext(request))
 
 

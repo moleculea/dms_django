@@ -1,0 +1,96 @@
+{% extends "meeting/meeting_participation_base.html" %}
+{% load url from future %}
+{% block title %}Invitation - DMS{% endblock %}
+
+{% block content %}
+{% block subject %}
+    <h3>Invitation</h3>
+{% endblock %}
+
+<table class="dmstable" style="width:100%">
+<tr>
+<th nowrap="nowrap">
+Meeting
+</th>
+<th nowrap="nowrap">
+Host
+</th>
+<th nowrap="nowrap">
+Date
+</th>
+<th nowrap="nowrap">
+Time
+</th>
+<th nowrap="nowrap">
+Location
+</th>
+<th nowrap="nowrap">
+Agenda availability
+</th>
+<th nowrap="nowrap">
+Response
+</th>
+<th>
+Accept
+</th>
+<th>
+Decline
+</th>
+</tr>
+{% for invitation in uim %}
+<tr>
+<td>
+{{invitation.meeting_id.topic}}
+</td>
+
+<td>
+<a href="/user/?id={{invitation.host_id.user_id.id}}">{{invitation.host_id.user_name}}
+</td>
+
+<td style="font-size:92%">
+<a href="/agenda/{{success.0.date|date:"Y/m/d/" }}">{{success.0.date|date:"Y/m/d" }}</a>
+</td>
+<td style="font-size:92%" nowrap="nowrap">
+{{success.0.period_time}}
+</td>
+<td>
+{{invitation.meeting_id.location}}
+</td>
+<td>
+ {% if invitation.available == "True" %}
+ <span class="color_true">Available</span>
+ {% elif invitation.available == "False" %}
+ <span class="color_false">Unavailable</span>
+ {% else %}
+ N/A
+{% endif %}
+</td>
+
+<td>
+ {% if invitation.accept == "True" %}
+ <span class="color_true">Accept</span>
+ {% elif invitation.accept == "False" %}
+ <span class="color_false">Decline</span>
+ {% else %}
+ <span class="color_none">Silent</span>
+ {% endif %}
+</td>
+<td style="padding:0 4px 0 0px">
+{% if invitation.accept == "False" or  not invitation.accept%}
+<a href="{{request.get_full_path}}&accept=true"><span class="agenda_period" style="width:100%;padding:2px;min-height:40px">&nbsp;</span></a>
+{% else %}
+&nbsp;
+{% endif %}
+</td>
+<td style="padding:0 4px 0 0px">
+{% if invitation.accept == "True" or  not invitation.accept%}
+<a href="{{request.get_full_path}}&accept=false"><span class="agenda_period" style="width:100%;padding:2px;min-height:40px">&nbsp;</span></a>
+{% else %}
+&nbsp;
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}

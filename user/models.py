@@ -171,6 +171,13 @@ def getUserMessage(user_id):
     message = Message.objects.filter(user_id=user_id).order_by('-id')
     return message
   
+  
+  
+def readMessage(message_id):
+    message = Message.objects.get(id=message_id)
+    message.read = "True"
+    message.save()
+    
 """
 # Signal processing #
 

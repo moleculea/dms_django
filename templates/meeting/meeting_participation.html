@@ -6,6 +6,7 @@
 {% block subject %}
     <h2>Meeting participation</h2>
 {% endblock %}
+
 <table class="dmstable">
 <caption><b>
 Basic information
@@ -53,6 +54,9 @@ Not configured
 </td>
 </tr>
 </table>
+{%with uim as data %}
+{%include "t_pagination.html" %}
+{% endwith %}
 
 <table class="dmstable">
 <caption><b>
@@ -81,7 +85,7 @@ Decline
 {% for invitation in uim %}
 <tr>
 <td>
-{{invitation.meeting_id.topic}}
+<a href="/meeting/ca/invitation/?id={{invitation.meeting_id.meeting_id}}">{{invitation.meeting_id.topic}}</a>
 </td>
 
 <td>

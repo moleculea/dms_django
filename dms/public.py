@@ -2,6 +2,8 @@
 # Pagination
 from django.core.paginator import Paginator
 
+from django.http import  HttpResponseRedirect
+
 """
 Global public functions
 """
@@ -42,3 +44,17 @@ def dailyPeriod2list(daily_period):
     string = string.zfill(16)
     list = [int(i) for i in string]
     return list
+
+"""
+redirect_back()
+
+Redirect back to page-based perspective, avoiding multiple query string
+
+"""
+
+def redirect_back(request, getname):
+    getvalue = request.GET.get(getname, None)
+    if getvalue:
+        return HttpResponseRedirect(request.path +"?%s=%s"%(getname,getvalue))
+    else:
+        return HttpResponseRedirect(request.path)

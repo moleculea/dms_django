@@ -45,5 +45,7 @@ urlpatterns = patterns('meeting.views',
     # Participation config
     url(r'^ca/config/$','participation_config'),
     
+    # Participation invitation
+    url(r'^ca/invitation/$','participation_invitation'),
     
 )

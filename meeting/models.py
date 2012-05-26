@@ -592,6 +592,16 @@ def getInvitation(user_id):
 
 
 """
+getInvitationMeeting()
+
+"""
+def getInvitationMeeting(user_id,meeting_id):
+    uim = getInvitation(user_id)
+    uim = uim.filter(meeting_id=meeting_id)
+    return uim
+
+
+"""
 updateUIM()
 
 Update dms.user_invitee_meeting.accept 
