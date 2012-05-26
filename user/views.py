@@ -9,7 +9,7 @@ from django.template.loader import get_template
 
 # Models
 from django.contrib.auth.models import User
-from user.models import UserSPADE, UserConfig, getUserInvitee
+from user.models import *
 from agenda.models import getUserConfig
 
 
@@ -24,6 +24,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.core.urlresolvers import reverse
 
 import django.contrib.auth.views as auth_views
+from dms.public import pagination_creator
 
 # Pagination
 from django.core.paginator import Paginator
@@ -165,8 +166,10 @@ list()
 def list(request):
     username = request.user.username
     data = User.objects.all()
-    paginator = Paginator(data, 10)
     
+    data = pagination_creator(request, data, 10)
+    
+    """
     if request.GET:
         page = request.GET.get('page')
     else:
@@ -181,9 +184,25 @@ def list(request):
         # If page is out of range (e.g. 9999), deliver last page of results.
         data = paginator.page(paginator.num_pages)
     
-
+    """
     return render_to_response('user/user_list.html',{'data':data,'username':username}, context_instance=RequestContext(request))
 
 
+"""
+message()
+
+# url: /user/message/
+"""
+
+@login_required
+def message(request):
+    username = request.user.username
+    user_id = request.user.id
+    
+    message = getUserMessage(user_id)
+    #message = pagination_creator(request, message, 10)
+    
+    context = {'message':message,'username':username}
+    return render_to_response('user/user_message.html',context, context_instance=RequestContext(request))
 
 

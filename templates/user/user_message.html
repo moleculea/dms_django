@@ -1,0 +1,32 @@
+{% extends "user/user_base.html" %}
+{% block title %}User list - DMS{% endblock %}
+{% block content %}
+{% block subject %}
+    <h3>User messages</h3>
+{% endblock %}
+{%with message as data %}
+{%include "t_pagination.html" %}
+{% endwith %}
+<table class="dmstable">
+<tr>
+    <th>
+    Message
+    </th>
+    <th>
+    Read
+    </th>
+</tr>
+
+{% for m in message %}
+<tr>
+<td>
+<a href="{{m.uri}}">{{ m.content_id.content}}</a>
+</td>
+<td>
+{{ m.read}}
+</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}

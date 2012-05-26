@@ -178,6 +178,8 @@
 <tr>
 <td>
 Stage Code: {{stage}}<br/>
+{%if meeting_state == 1 or meeting_state == 2 %}
+
 {%if stage == 0 %}
 Scheduling has just started. Please wait for MSA until it delivers you message for interaction
 {%endif%}
@@ -240,7 +242,9 @@ Though MSA Feedback received declination from one or more VIPs, the meeting cont
 {%endif%}
 {%if stage == 9 %}
 The meeting will be rescheduled soon. Please wait until ALCC refreshes the meeting configuration.
-
+{%endif%}
+{%else%}
+This meeting is due or has been canceled. 
 {%endif%}
 </td>
 </tr>
@@ -275,10 +279,14 @@ The meeting will be rescheduled soon. Please wait until ALCC refreshes the meeti
          {% endif %}
         </td>
         <td>
-         {% if invitee.available == "True" %}
-         <span class="color_true">Available</span>
-         {% elif invitee.available == "False" %}
-         <span class="color_false">Unavailable</span>
+         {% if stage >= 3 %}
+	         {% if invitee.available == "True" %}
+	         <span class="color_true">Available</span>
+	         {% elif invitee.available == "False" %}
+	         <span class="color_false">Unavailable</span>
+	         {% else %}
+	         N/A
+            {% endif %}
          {% else %}
          N/A
          {% endif %}

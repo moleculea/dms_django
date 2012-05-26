@@ -58,7 +58,72 @@ Not configured
 <caption><b>
 Invitations
 </b></caption>
+<tr>
+<th>
+Meeting
+</th>
+<th>
+Host
+</th>
+<th>
+Agenda availability
+</th>
+<th>
+Response
+</th>
+<th>
+Accept
+</th>
+<th>
+Decline
+</th>
+</tr>
+{% for invitation in uim %}
+<tr>
+<td>
+{{invitation.meeting_id.topic}}
+</td>
 
+<td>
+<a href="/user/?id={{invitation.host_id.user_id.id}}">{{invitation.host_id.user_name}}
+</td>
+
+<td>
+
+ {% if invitation.available == "True" %}
+ <span class="color_true">Available</span>
+ {% elif invitation.available == "False" %}
+ <span class="color_false">Unavailable</span>
+ {% else %}
+ N/A
+{% endif %}
+</td>
+
+<td>
+ {% if invitation.accept == "True" %}
+ <span class="color_true">Accept</span>
+ {% elif invitation.accept == "False" %}
+ <span class="color_false">Decline</span>
+ {% else %}
+ <span class="color_none">Silent</span>
+ {% endif %}
+</td>
+<td style="padding:0 4px 0 0px">
+{% if invitation.accept == "False" or  not invitation.accept%}
+<a href="?accept=true&meeting={{invitation.meeting_id.meeting_id}}"><span class="agenda_period" style="width:100%;padding:2px;">&nbsp;</span></a>
+{% else %}
+&nbsp;
+{% endif %}
+</td>
+<td style="padding:0 4px 0 0px">
+{% if invitation.accept == "True" or  not invitation.accept%}
+<a href="?accept=false&meeting={{invitation.meeting_id.meeting_id}}"><span class="agenda_period" style="width:100%;padding:2px;">&nbsp;</span></a>
+{% else %}
+&nbsp;
+{% endif %}
+</td>
+</tr>
+{% endfor %}
 </table>
 
 

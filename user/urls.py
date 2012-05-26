@@ -35,5 +35,7 @@ urlpatterns = patterns('',
     # User list page
     url(r'^list/$', 'user.views.list'),
     
+    # User message page
+    url(r'^message/$', 'user.views.message'),
 
 )

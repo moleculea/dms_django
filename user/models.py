@@ -54,6 +54,33 @@ class UserInvitee(models.Model):
         db_table = u'user_invitee'
         
 
+"""
+Message
+
+# Model of dms.message
+
+"""
+class Message(models.Model):
+    id = models.AutoField(primary_key=True)
+    user_id = models.ForeignKey(User,db_column="user_id", related_name='+')
+    content_id = models.ForeignKey('Content',db_column="content_id", related_name='+')
+    uri = models.CharField(max_length=300)
+    read = models.CharField(max_length=15)
+    class Meta:
+        db_table = u'message'
+
+"""
+Content
+
+# Model of dms.content
+
+"""
+class Content(models.Model):
+    content_id = models.IntegerField(primary_key=True,db_column="content_id")
+    content = models.CharField(max_length=150, db_column="content")
+    class Meta:
+        db_table = u'content'
+
 
 """
 # Model methods
@@ -140,7 +167,10 @@ def isUserInviteeEmpty(host_id,invitee_id):
         return True
 
     
-        
+def getUserMessage(user_id):    
+    message = Message.objects.filter(user_id=user_id).order_by('-id')
+    return message
+  
 """
 # Signal processing #
 

@@ -89,9 +89,21 @@ def participation_index(request):
     
     username = request.user.username
     user_id = request.user.id
-    
+
+    if request.GET:
+        # Status update
+        # VIP
+        accept = request.GET.get('accept', None)
+        meeting = request.GET.get('meeting', None)
+        if accept and meeting:
+            updateUIM(user_id,meeting,accept)
+            return HttpResponseRedirect("/meeting/ca/")
+        
     user_ca = getUserCA(user_id)
-    context = {'username':username,'user_ca':user_ca}
+    uim = getInvitation(user_id)
+
+    
+    context = {'username':username,'user_ca':user_ca,'uim':uim}
 
     return render_to_response('meeting/meeting_participation.html',context,context_instance=RequestContext(request))
   
@@ -176,7 +188,7 @@ def scheduling_invitee(request):
         
 
     user_list = getUserInvitee(user_id)
-    user_list = pagination_creator(request, user_list,5)
+    user_list = pagination_creator(request, user_list,10)
     
     context = {'username':username,'user_list':user_list,'request':request}
     return render_to_response('meeting/meeting_scheduling_invitee.html',context,context_instance=RequestContext(request))
@@ -201,7 +213,7 @@ def scheduling_invitee_add(request):
             
     user_list = User.objects.exclude(id=user_id)
     user_invitee = getUserInviteeIDList(user_id)
-    user_list = pagination_creator(request, user_list, 5)
+    user_list = pagination_creator(request, user_list, 10)
     context = {'username':username,'user_list':user_list,'user_invitee':user_invitee,'request':request}
     return render_to_response('meeting/meeting_scheduling_invitee_add.html',context,context_instance=RequestContext(request))
 

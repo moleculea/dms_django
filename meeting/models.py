@@ -335,7 +335,6 @@ def getUnfinishedConfig(user_id):
     else:
         return None
 
-
 """
 getCurrentMeeting()
 
@@ -574,6 +573,41 @@ def getUIMWithStatus(meeting_id,user_id):
         uim_with_status.append(dict)
     return uim_with_status
 
+
+
+"""
+getInvitation()
+
+Get the invitation of meetings for a certain user (invitee)
+
+"""
+
+def getInvitation(user_id):
+    # Get meetings whose column 'invite' is True
+    meeting_invite = Meeting.objects.filter(invite='True').values('meeting_id').query
+    
+    uim = UserInviteeMeeting.objects.filter(invitee_id=user_id,meeting_id__in=meeting_invite)
+    
+    return uim
+
+
+"""
+updateUIM()
+
+Update dms.user_invitee_meeting.accept 
+Invitee's action
+"""
+
+def updateUIM(invitee_id,meeting_id,accept):
+    if accept == 'true':
+        accept = 'True'
+    if accept == 'false':
+        accept = 'False'
+    uim = UserInviteeMeeting.objects.get(invitee_id=invitee_id,meeting_id=meeting_id)
+    uim.accept = accept
+    uim.save()
+
+
 """
 isVIPDecline()
 
@@ -788,10 +822,10 @@ Add the meeting to dms.meeting_canceled
 def addToMeetingCanceled(meeting_id, host_id):
     
     # If meeting does not exist in dms.meeting_canceled
-    if not isMeetingCanceled:
+    if not isMeetingCanceled(meeting_id):
         meeting = Meeting.objects.get(meeting_id=meeting_id)
         user_spade = UserSPADE.objects.get(user_id=host_id)
-        meeting_canceled = MeetingCanceled(meeting_id=meeting, host_id=user_spade, stage="FC")
+        meeting_canceled = MeetingCanceled(meeting_id=meeting, host_id=user_spade, stage="FC", date="2000-01-01")
         meeting_canceled.save()
 
 
