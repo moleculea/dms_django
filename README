@@ -1,0 +1,14 @@
+Django-based Web Interface for the Distrbuted Meeting Scheduler
+
+Django version: 1.40
+
+Setting folder:
+	# /dms
+Apps:
+	# agenda
+	# meeting
+	# user
+Static folder:
+	# /media
+Template folder:
+	# /templates
