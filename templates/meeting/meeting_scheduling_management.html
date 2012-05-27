@@ -216,6 +216,7 @@ The invitations have been sent. The MSA Feedback has not received declination fr
 {%endif%}
 
 {%if stage == 5 %}
+### This branch never happens!!!!
 The invitation has been canceled. The meeting is canceled.
 {%endif%}
 {%if stage == 6 %}
@@ -225,11 +226,6 @@ The MSA Feedback has received declination from one or more VIPs. You can check t
     <a href="{{request.get_full_path}}&reschedule=true"><span class="interact_button">Reschedule</span></a>
     <a href="{{request.get_full_path}}&cancel=true"><span class="interact_cancel">Cancel</span></a>
     
-
-{%endif%}
-
-{%if stage == 7 %}
-Upon declination from one or more VIPs received by MSA Feedback, the meeting is canceled.
 
 {%endif%}
 
@@ -243,8 +239,16 @@ Though MSA Feedback received declination from one or more VIPs, the meeting cont
 {%if stage == 9 %}
 The meeting will be rescheduled soon. Please wait until ALCC refreshes the meeting configuration.
 {%endif%}
+
+{%else%}
+
+{%if stage == 5 %}
+The invitation has been canceled. The meeting is canceled.
+{%elif stage == 7 %}
+Upon declination from one or more VIPs received by MSA Feedback, the meeting is canceled.
 {%else%}
 This meeting is due or has been canceled. 
+{%endif%}
 {%endif%}
 </td>
 </tr>
@@ -297,8 +301,10 @@ This meeting is due or has been canceled.
 	         <span class="color_true">Accept</span>
 	         {% elif invitee.available == "False" or invitee.accept == "False" %}
 	         <span class="color_false">Decline</span>
-	         {% else %}
+	         {% elif not invitee.accept  %}
 	         <span class="color_none">Silent</span>
+	         {% elif not invitee.available  %}
+	         N/A
 	         {% endif %}
 	    {% else %}
 	    N/A
