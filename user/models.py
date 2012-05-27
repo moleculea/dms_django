@@ -29,7 +29,7 @@ class UserConfig(models.Model):
     
     user_id = models.OneToOneField(User, primary_key=True, db_column="user_id")
     msa_id = models.ForeignKey('meeting.UserMSA', db_column="msa_id", null=True, related_name='+')
-    ca_id = models.ForeignKey('meeting.UserMSA', db_column="ca_id", null=True, related_name='+')
+    ca_id = models.ForeignKey('meeting.UserCA', db_column="ca_id", null=True, related_name='+')
     pref_period = models.IntegerField(null=True)
     best_period = models.IntegerField(null=True)
     
@@ -101,6 +101,15 @@ def getUserInvitee(host_id):
     user_invitee = UserInvitee.objects.filter(host_id=host_id)
     return user_invitee
 
+"""
+getUserInviteeVIP()
+Get VIP invitee of a user
+Retun UserInvitee instance
+
+"""
+def getUserInviteeVIP(host_id):
+    user_invitee = UserInvitee.objects.filter(host_id=host_id,invitee_status=1)
+    return user_invitee
 
 """
 getUserInviteeIDList()

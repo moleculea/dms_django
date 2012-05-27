@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required
 
 # Models
 from meeting.models import *
-from user.models import getUserInviteeIDList,saveUserInvitee,getUserInvitee,updateInviteeStatus,deleteUserInvitee
+from user.models import getUserInviteeIDList,saveUserInvitee,getUserInvitee,updateInviteeStatus,deleteUserInvitee, getUserInviteeVIP,UserConfig
 
 # Paginator
 from dms.public import pagination_creator,redirect_back
@@ -75,8 +75,27 @@ scheduling_index()
 @login_required
 def scheduling_index(request):
     username = request.user.username
-    context = {'username':username}
-
+    user_id = request.user.id
+    
+    meeting = Meeting.objects.filter(host_id=user_id)
+    meeting_success = getMeetingSuccess(user_id)
+    meeting_canceled = MeetingCanceled.objects.filter(host_id=user_id)
+    meeting_failed = getMeetingFailed(user_id)
+    
+    meeting = len(meeting)
+    meeting_success = len(meeting_success)
+    meeting_canceled = len(meeting_canceled)
+    meeting_failed = len(meeting_failed)
+    
+    invitee = getUserInvitee(user_id)
+    invitee_vip = getUserInviteeVIP(user_id)
+    
+    invitee = len(invitee)
+    invitee_vip = len(invitee_vip)
+    invitee_nonvip = invitee - invitee_vip
+    
+    context = {'username':username,'meeting_success':meeting_success,'meeting_canceled':meeting_canceled,'meeting_failed':meeting_failed,'meeting':meeting,'invitee':invitee,'invitee_vip':invitee_vip,'invitee_nonvip':invitee_nonvip}
+    
     return render_to_response('meeting/meeting_scheduling.html',context,context_instance=RequestContext(request))
   
 
@@ -103,7 +122,7 @@ def participation_index(request):
     uim = getInvitation(user_id)
     uim = pagination_creator(request, uim, 10)
 
-    context = {'username':username,'uim':uim}
+    context = {'username':username,'uim':uim,'user_ca':user_ca}
 
     return render_to_response('meeting/meeting_participation.html',context,context_instance=RequestContext(request))
   
@@ -124,7 +143,7 @@ def participation_config(request):
         
         if form.is_valid():
             accept = form.cleaned_data['accept']
-            #active = form.cleaned_data['active']
+            participate = form.cleaned_data['participate']
             
             user_ca = getUserCA(user_id)
             
@@ -132,13 +151,35 @@ def participation_config(request):
             if user_ca:
                 # Update
                 user_ca.accept = accept
-                #user_ca.active = active
+                user_config = UserConfig.objects.get(user_id=user_id)
+                user_config.ca_id = user_ca
                 user_ca.save()
+                user_config.save()
                 
             else:
                 # Insert
-                user_ca = UserCA(user_id=user_id,accept=accept,active=active)
+                user_spade = UserSPADE.objects.get(user_id=user_id)
+                user_ca = UserCA(user_id=user_spade,active='True',accept=accept)
+                user_config = UserConfig.objects.get(user_id=user_id)
+                user_config.ca_id = user_ca
                 user_ca.save()
+                user_config.save()
+            
+            # Do nothing (default state: CA is running in SPADE) 
+            if participate == "1":
+                user_ca = getUserCA(user_id)
+                user_ca.active = 'True'
+                user_ca.save()
+                        
+            else:
+                user_ca = getUserCA(user_id)
+                if user_ca:
+                    # Add to CA for ALCC
+                    addToCA(user_id, 'False')
+                    # Update user_ca.active to False
+                    user_ca.active = 'False'
+                    user_ca.save()
+                
                 
         return HttpResponseRedirect("/meeting/ca/")
     

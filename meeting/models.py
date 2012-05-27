@@ -883,8 +883,46 @@ def addToMSA(host_id, meeting_id, active):
         user = UserSPADE.objects.get(user_id=host_id)
         msa = MSA(user_id=user,meeting_id=meeting,active=active)
         msa.save()
-
+        
+        
+def addToCA(user_id, active):
     
+    check = CA.objects.filter(user_id=user_id)
+    
+    if len(check) > 0:
+        pass
+    
+    else:
+        user = UserSPADE.objects.get(user_id=user_id)
+        ca = CA(user_id=user,active=active)
+        ca.save()
+
+
+"""
+getMeetingFailed()
+
+Get meetings that failed
+
+"""
+   
+def getMeetingFailed(user_id):
+    
+    # Get valid meetings (exclude unfinished or current meeting)
+    meeting_valid = Meeting.objects.filter(length__gt=0).values('meeting_id').query
+    meeting_success = MeetingSuccess.objects.all().values('meeting_id').query
+    meeting_failed = Meeting.objects.filter(meeting_id__in=meeting_valid).exclude(meeting_id__in=meeting_success)
+    
+    return meeting_failed
+
+
+def getMeetingSuccess(user_id):
+    
+    # Get valid meetings (exclude unfinished or current meeting)
+    meeting_valid = Meeting.objects.filter(length__gt=0).values('meeting_id').query
+    meeting_canceled = MeetingCanceled.objects.all().values('meeting_id').query
+    meeting_success = Meeting.objects.filter(meeting_id__in=meeting_valid).exclude(meeting_id__in=meeting_canceled)
+    
+    return meeting_success
 """
 Other methods
 ############

@@ -293,9 +293,9 @@ This meeting is due or has been canceled.
         </td>
         <td>
         {% if stage == 4 or stage == 6 or stage == 7 or stage == 8 %}
-	         {% if invitee.accept == "True" %}
+	         {% if invitee.accept == "True" and invitee.available == "True" %}
 	         <span class="color_true">Accept</span>
-	         {% elif invitee.accept == "False" %}
+	         {% elif invitee.available == "False" or invitee.accept == "False" %}
 	         <span class="color_false">Decline</span>
 	         {% else %}
 	         <span class="color_none">Silent</span>

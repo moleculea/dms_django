@@ -20,7 +20,7 @@ CA state
 {%if user_ca %}
     {%if user_ca.active == "True" %}
     <span class="color_true">Active</span>
-    {%elif user_ca.accept == "False" %}
+    {%elif user_ca.active == "False" %}
     <span class="color_false">Inactive</span>
     {% endif%}
 {%else%}

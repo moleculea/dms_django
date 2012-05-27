@@ -11,7 +11,7 @@ from django.template.loader import get_template
 from django.contrib.auth.models import User
 from user.models import *
 from agenda.models import getUserConfig
-
+from meeting.models import Meeting, UserInviteeMeeting
 
 # login_required decorator
 from django.contrib.auth.decorators import login_required
@@ -59,6 +59,7 @@ index()
 def index(request, id=None):
     # id is captured from URL for external query page
     query = True
+
     if id:
         # Query id
         id = id
@@ -81,9 +82,11 @@ def index(request, id=None):
     else:
         group = "User"
         
-    schedule = 0
-    invite = 0
+    schedule = Meeting.objects.filter(host_id=id)
+    schedule = len(schedule)
     
+    invite = UserInviteeMeeting.objects.filter(invitee_id=id)
+    invite = len(invite)
     
     context = {'username':username,'id':id,'joined':joined,'group':group,'query':query,'schedule':schedule,'invite':invite}
     return render_to_response('user/user.html',context,context_instance=RequestContext(request))
@@ -132,7 +135,6 @@ def config(request):
     
     pref_period = None
     best_period = None
-    msa = None
     ca = None
     
     
@@ -141,15 +143,16 @@ def config(request):
         
     if user_config.best_period and user_config.best_period != 65535:
         best_period= user_config.best_period
-    
+    """
     if user_config.msa_id:
         msa = user_config.msa_id
-        
+    """  
     if user_config.ca_id:
-        ca = user_config.ca_id  
+        ca = user_config.ca_id
+        
     agenda = {'pref':pref_period,'best':best_period}
     
-    c = RequestContext(request, {'msa': msa,'ca': ca,'agenda':agenda,'username':username,'user_invitee':user_invitee})
+    c = RequestContext(request, {'ca': ca,'agenda':agenda,'username':username,'user_invitee':user_invitee})
     t = get_template('user/user_config.html')
     return HttpResponse(t.render(c))
 

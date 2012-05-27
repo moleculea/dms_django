@@ -9,22 +9,14 @@
 <table class="dmstable">
 <tr>
 	<th>
-	Scheduling
-	</th>
-	<td>
-	{{ msa }} 
-	</td>
-	<td>
-	<a href="/meeting/msa/config/">[Config]</a>
-	</td>
-</tr>
-
-<tr>
-	<th>
 	Participation
 	</th>
 	<td>
-	{{ ca }} 
+	{% if ca %}
+	Configured
+	{% else %}
+	Not configured
+	{% endif %}
 	</td>
 	<td>
     <a href="/meeting/ca/config/">[Config]</a>

@@ -15,9 +15,9 @@ Participate in meeting scheduling?
 <td>
 {% if user_ca %}
 <label for="id_participate_0"><input {% if user_ca.active == "True" %}checked="checked"{% endif %} type="radio" id="id_participate_0" value="1" name="participate" /> Yes</label> 
-<label for="id_participate_1"><input type="radio" id="id_participate_1" value="0" name="participate" /> No</label>
+<label for="id_participate_1"><input {% if user_ca.active == "False" %}checked="checked"{% endif %} type="radio" id="id_participate_1" value="0" name="participate" /> No</label>
 {% else %}
-<label for="id_participate_0"><input {% if user_ca.active == "False" %}checked="checked"{% endif %} type="radio" id="id_participate_0" value="1" name="participate" /> Yes</label> 
+<label for="id_participate_0"><input checked="checked" type="radio" id="id_participate_0" value="1" name="participate" /> Yes</label> 
 <label for="id_participate_1"><input type="radio" id="id_participate_1" value="0" name="participate" /> No</label>
 {% endif %}
 </td>

@@ -7,28 +7,28 @@
     <h2>Meeting scheduling</h2>
 {% endblock %}
 <div class="help_text">
-You have scheduled 0 meetings.
+You have scheduled {{meeting}} meetings.
 </div>
 <table class="dmstable">
 <tr>
-<th>Success</th><td>0</td>
+<th>Success</th><td>{{meeting_success}}</td>
 </tr>
 <tr>
-<th>Failed</th><td>0</td>
+<th>Failed</th><td>{{meeting_failed}}</td>
 </tr>
 <tr>
-<th>Canceled</th><td>0</td>
+<th>Canceled</th><td>{{meeting_canceled}}</td>
 </tr>
 </table>
 <div class="help_text">
-You have 0 invitees.
+You have {{invitee}} invitees.
 </div>
 <table class="dmstable">
 <tr>
-<th>VIPs</th><td>0</td>
+<th>VIPs</th><td>{{invitee_vip}}</td>
 </tr>
 <tr>
-<th>Non-VIPs</th><td>0</td>
+<th>Non-VIPs</th><td>{{invitee_nonvip}}</td>
 </tr>
 </table>
 <div class="help_text">
